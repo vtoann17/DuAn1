@@ -204,8 +204,90 @@
       </div>
     </div>
   </section>
+  <!-- ✅ Nút Xem thêm giữa 2 section -->
+<div class="view-more-box">
+  <button class="view-more-btn">Xem thêm</button>
+</div>
+
     </div>
   </div>
+  <!-- ✅ Sản phẩm đã xem -->
+<section class="viewed-wrapper">
+  <div class="viewed-section">
+    <h2 class="viewed-title">Sản Phẩm Đã Xem</h2>
+
+    <div class="viewed-box">
+      <div class="viewed-item">
+
+        <img
+          src="https://salt.tikicdn.com/cache/400x400/ts/product/d2/6f/8a/cae9c3.jpg"
+          class="viewed-img"
+        />
+
+        <p class="viewed-price">199.000 đ</p>
+
+        <p class="viewed-name">
+          Sách Trò Chơi Vương Quyền 3C - Tử Hôn (Tái Bản 2019)
+        </p>
+
+        <div class="viewed-rate">
+          ⭐ 4.8 <span class="count">(12)</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+<section class="top-sell-wrapper">
+  <div class="top-sell-box">
+    <h2 class="top-sell-title">Top Bán Chạy Sản Phẩm Nhà cửa & Đời sống</h2>
+
+    <ol class="top-sell-list">
+      <li>
+        Đèn Pha LED Ô Tô - Xe Máy H4 36W: Siêu Sáng Với 3 Nhiệt Màu AUTO Tiết Kiệm Năng Lượng Loại Tốt
+        <span class="price">280.427đ</span>
+      </li>
+      <li>
+        Thiết Bị Tiết Kiệm Điện Thông Minh Nhật Bản – Bí Kíp Vàng Cho Mọi Gia Đình Việt
+        <span class="price">164.000đ</span>
+      </li>
+      <li>
+        Nồi phủ sứ chống dính Elmich Olive Classic EL- 55350V - Hàng chính hãng
+        <span class="price">292.302đ</span>
+      </li>
+      <li>
+        Nắp Đậy Cống Thoát Nước Chống Mùi Hôi, Côn Trùng – Chuyên Dùng Cho Sàn Nhà Tắm, Nhà Vệ Sinh - HÀNG CHÍNH HÃNG MININ
+        <span class="price">29.000đ</span>
+      </li>
+      <li>
+        Bình Nước Thuỷ Tinh Kèm Nắp Pha Trà Thông Minh Cao Cấp Có Lọc Trà Inox Sang Trọng Tặng Túi Chống Nóng Quai Đeo
+        <span class="price">135.000đ</span>
+      </li>
+      <li>
+        Bộ hộp cơm giữ nhiệt LocknLock Tower Vacuum Lunch Box - LHC8058 - Hàng chính hãng
+        <span class="price">285.200đ</span>
+      </li>
+      <li>
+        Hạt giống Xà Lách các loại, nảy mầm tốt, dễ trồng, nhanh thu hoạch, cây khoẻ - Hạt giống Rau Đồng
+        <span class="price">23.167đ</span>
+      </li>
+      <li>
+        Khăn giấy cuộn đa năng lau bếp bắt dính đồ gia dụng kích thước 20×25cm thấm hút tốt, dai khó rách, có thể tái sử dụng
+        <span class="price">48.000đ</span>
+      </li>
+      <li>
+        COMBO 3 Bóng Giặt Silicon Cầu Gai Chống Nhăn Quần Áo Quả Banh To 5.5CM Hamart Giặt Sạch Vượt Trội
+        <span class="price">45.000đ</span>
+      </li>
+      <li>
+        Bình Gas Bơm Bật Lửa Bluesky 5 Đầu Bơm Dung Tích 150gr/275ml Siêu Tiện Dụng, Bình Bơm Gas Bật Lửa Hàn Quốc
+        <span class="price">65.000đ</span>
+      </li>
+    </ol>
+  </div>
+</section>
+
+
 </template>
 
 <script setup>
@@ -643,32 +725,129 @@ h1 {
   color: #555;
   margin-top: 6px;
 }
-/* Ô tìm kiếm */
-/* .search-box {
+/* ✅ nền ngoài nhạt giống Tiki */
+.viewed-wrapper {
+  background: #f5f6fa; /* trắng pha xám nhạt */
+  padding: 40px 0;
+  border-radius: 12px;
+}
+
+/* ✅ khối trắng chứa sản phẩm */
+.viewed-section {
+  background: #ffffff;
+  width: 90%;
+  margin: auto;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* tiêu đề */
+.viewed-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+/* box hiển thị sản phẩm */
+.viewed-box {
   display: flex;
-  align-items: center;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 30px;
-  padding: 4px 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: 0.2s ease;
-  width: 220px;
+  justify-content: center;
 }
 
-.search-box input {
-  border: none;
-  outline: none;
-  background: transparent;
-  flex: 1;
-  padding: 8px 6px;
+/* sản phẩm */
+.viewed-item {
+  text-align: center;
+  max-width: 250px;
+}
+
+.viewed-img {
+  width: 180px;
+  border-radius: 8px;
+}
+
+.viewed-price {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+.viewed-name {
   font-size: 14px;
+  color: #333;
+  margin-top: 6px;
 }
 
-.search-box:focus-within {
-  border-color: #007bff;
-  box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
-} */
+.viewed-rate {
+  font-size: 13px;
+  color: #f5a623;
+  margin-top: 5px;
+}
+
+.count {
+  color: #777;
+}
+.top-sell-wrapper {
+  background: #f5f6fa;        /* nền xám nhạt */
+  padding: 40px 0;
+  border-radius: 12px;
+}
+
+.top-sell-box {
+  background: #fff;           /* khối trắng */
+  width: 90%;
+  margin: auto;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.top-sell-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.top-sell-list {
+  margin-left: 20px;
+  color: #1a73e8;         /* màu xanh giống ảnh */
+  font-size: 15px;
+}
+
+.top-sell-list li {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.price {
+  float: right;
+  color: #333;
+}
+/* ✅ Box để canh giữa */
+.view-more-box {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+/* ✅ Nút Xem thêm */
+.view-more-btn {
+  background: #fff;
+  border: 1px solid #0d63f3;
+  color: #0d63f3;
+  padding: 10px 30px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.view-more-btn:hover {
+  background: #0d63f3;
+  color: #fff;
+}
+
 
 
 </style>  
