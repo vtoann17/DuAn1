@@ -6,10 +6,12 @@
       <div class="logo">
         <div class="logo-box">
           <div class="block blue">T</div>
-          <div class="block blue">I</div>
-          <div class="block yellow">K</div>
-          <div class="block blue">I</div>
+          <div class="block blue">T</div>
+          <div class="block yellow">H</div>
+          <div class="block blue">B</div>
+          <div class="block blue">A</div>
         </div>
+        <!-- <img src="/img/logo.png" alt=""> -->
         <div class="slogan">Tốt & Nhanh</div>
       </div>
 
@@ -21,8 +23,8 @@
 
       <!-- Right Buttons -->
       <div class="right-nav">
-        <a href="#"><span class="icon">🏠</span> Trang chủ</a>
-        <a href="#"><span class="icon">😊</span> Tài khoản</a>
+        <a href="#"><span class="icon"></span> Trang chủ</a>
+        <a href="#"><span class="icon"></span> Tài khoản</a>
         <a href="#" class="cart">
           🛒
           <span class="cart-count">0</span>
@@ -43,7 +45,7 @@
       </div>
 
       <div class="delivery">
-        <span class="icon">📍</span>
+        <span class="icon"></span>
         <span>Giao đến:</span>
         <span class="address">TP. Tam Kỳ, P. Tân Thạnh, Quảng Nam</span>
       </div>
@@ -53,12 +55,12 @@
     <div class="header-bottom">
       <div class="commitments">
         <span class="label">Cam kết</span>
-        <span>✅ 100% hàng thật</span>
-        <span>📦 Freeship mọi đơn</span>
-        <span>🔄 Hoàn 200% nếu hàng giả</span>
-        <span>📅 30 ngày đổi trả</span>
-        <span>🚚 Giao nhanh 2h</span>
-        <span>💰 Giá siêu rẻ</span>
+        <span>100% hàng thật</span>
+        <span>Freeship mọi đơn</span>
+        <span>Hoàn 200% nếu hàng giả</span>
+        <span>30 ngày đổi trả</span>
+        <span>Giao nhanh 2h</span>
+        <span>Giá siêu rẻ</span>
       </div>
     </div>
   </header>
@@ -93,6 +95,21 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.logo img {
+  height: 70px;
+  width: 100px; /* kích thước hợp lý với header */
+  width: auto;
+  display: block;
+}
+
+.slogan {
+  font-size: 14px;
+  font-weight: 600;
+  color: #007bff;
+  margin-top: 2px;
+  white-space: nowrap; /* không xuống dòng */
 }
 .logo-box {
   display: flex;
