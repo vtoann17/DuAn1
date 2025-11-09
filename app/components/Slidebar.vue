@@ -1,15 +1,12 @@
 <script setup>
 import {
   User,
-  Bell,
-  CreditCard,
-  MapPin,
-  DollarSign,
-  Eye,
-  Heart,
-  Star,
-  Tag,
-  Headphones
+  Package,
+  Tags,
+  ShoppingBag,
+  Users,
+  LayoutDashboard,
+  Settings
 } from "lucide-vue-next";
 </script>
 
@@ -20,25 +17,17 @@ import {
         <User class="icon-lg" />
       </div>
       <div>
-        <p class="small-text">Tài khoản của</p>
-        <p class="username">Hoàng Nguyễn Quang Huy</p>
+        <p class="small-text">Trang quản trị</p>
       </div>
     </div>
 
     <nav class="menu">
-      <a class="menu-item active"><User class="icon" /> Thông tin tài khoản</a>
-      <a class="menu-item"><Bell class="icon" /> Thông báo của tôi</a>
-      <a class="menu-item"><CreditCard class="icon" /> Quản lý đơn hàng</a>
-      <a class="menu-item"><MapPin class="icon" /> Quản lý đổi trả</a>
-      <a class="menu-item"><MapPin class="icon" /> Sổ địa chỉ</a>
-      <a class="menu-item"><CreditCard class="icon" /> Thông tin thanh toán</a>
-      <a class="menu-item"><Star class="icon blue" /> Đánh giá sản phẩm</a>
-      <a class="menu-item"><Eye class="icon" /> Sản phẩm bạn đã xem</a>
-      <a class="menu-item"><Heart class="icon" /> Sản phẩm yêu thích</a>
-      <a class="menu-item"><Star class="icon" /> Nhận xét của tôi</a>
-      <a class="menu-item"><DollarSign class="icon blue" /> Chia sẻ có lời</a>
-      <a class="menu-item"><Tag class="icon yellow" /> Mã giảm giá</a>
-      <a class="menu-item"><Headphones class="icon" /> Hỗ trợ khách hàng</a>
+      <a class="menu-item active"><LayoutDashboard class="icon" /> Bảng điều khiển</a>
+      <a class="menu-item"><Package class="icon" /> Quản lý sản phẩm</a>
+      <a class="menu-item"><Tags class="icon" /> Quản lý danh mục</a>
+      <a class="menu-item"><ShoppingBag class="icon" /> Quản lý đơn hàng</a>
+      <a class="menu-item"><Users class="icon" /> Quản lý người dùng</a>
+      <a class="menu-item"><Settings class="icon" /> Cài đặt hệ thống</a>
     </nav>
   </aside>
 </template>
@@ -118,14 +107,6 @@ import {
 .menu-item .icon {
   width: 20px;
   height: 20px;
-}
-
-.menu-item .blue {
-  color: #007bff;
-}
-
-.menu-item .yellow {
-  color: #f59e0b;
 }
 
 /* Mobile hidden by default */
