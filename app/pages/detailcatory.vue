@@ -292,8 +292,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import AppSlidebar from "~/components/AppSlidebar.vue";
-
+import Appslidebar from "/components/AppSlidebar.vue";
 const searchQuery = ref("");
 const sortOption = ref("popular");
 
