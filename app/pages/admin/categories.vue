@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue';
+import { useCategories } from '~/store/categories';
 definePageMeta({ layout: "admin" });
+const storeCategories = useCategories()
 const loading = ref(false);
 const showModal = ref(false);
 const isEditing = ref(false);
@@ -68,7 +70,4 @@ const closeModal = () => {
         </div>
     </div>
 </template>
-<style scoped>
-
-
-</style>
+<style scoped></style>
