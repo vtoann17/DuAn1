@@ -6,7 +6,8 @@ import {
   ShoppingBag,
   Users,
   LayoutDashboard,
-  Settings
+  Settings,
+  Award 
 } from "lucide-vue-next";
 
 
@@ -29,6 +30,9 @@ import {
       </NuxtLink>
       <NuxtLink to="/admin/categories" class="menu-item">
         <Tags class="icon" /> Quản lý danh mục
+      </NuxtLink>
+      <NuxtLink to="/admin/brands" class="menu-item">
+        <Award  class="icon" /> Quản lý thương hiệu
       </NuxtLink>
       <a class="menu-item">
         <Package class="icon" /> Quản lý sản phẩm
