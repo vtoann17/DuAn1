@@ -1,16 +1,48 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed, reactive } from 'vue';
+import { useCategories } from '~/store/categories';
+import { onMounted } from 'vue';
+
 definePageMeta({ layout: "admin" });
 
+const storeCategories = useCategories()
 const loading = ref(false);
 const showModal = ref(false);
 const isEditing = ref(false);
 
-const brands = ref([
-    { id: 1, name: "Apple", image: "https://via.placeholder.com/80" },
-    { id: 2, name: "Samsung", image: "https://via.placeholder.com/80" },
-    { id: 3, name: "Dell", image: "https://via.placeholder.com/80" },
-]);
+const categories = computed(() => storeCategories.categories);
+const totalCategories = computed(() => storeCategories.totalCategories);
+const totalPages = computed(() => storeCategories.totalPages);
+
+const query = reactive({
+    search: '',
+    sort: 'descID',
+    perPage: 5,
+    page: 1
+})
+
+const dropdownOpen = reactive({
+    perPage: false,
+    sort: false
+})
+
+const sortLabels = {
+    'descID': 'Mới nhất',
+    'ascID': 'Cũ nhất',
+    'ascName': 'Tên A → Z',
+    'descName': 'Tên Z → A'
+}
+
+const getSortLabel = (value) => sortLabels[value] || "Mới nhất";
+
+const toggleDropdown = (type) => dropdownOpen[type] = !dropdownOpen[type];
+const closeDropdown = (type) => setTimeout(() => dropdownOpen[type] = false, 200);
+
+const selectOption = async (type, value) => {
+    query[type] = value;
+    dropdownOpen[type] = false;
+    await onChange();
+};
 
 const form = ref({
     id: null,
@@ -19,269 +51,543 @@ const form = ref({
     preview: null
 });
 
-// mở modal thêm
+// Modal ===========================
 const openAddModal = () => {
     isEditing.value = false;
-    form.value = { id: null, name: "", image: null, preview: null };
+    resetForm();
     showModal.value = true;
+    document.body.classList.add("modal-open");
 };
 
-// mở modal sửa
-const openEditModal = (brand) => {
+const openEditModal = (category) => {
     isEditing.value = true;
     form.value = {
-        id: brand.id,
-        name: brand.name,
+        id: category.id,
+        name: category.name,
         image: null,
-        preview: brand.image,
+        preview: category.img
     };
     showModal.value = true;
+    document.body.classList.add("modal-open");
 };
 
-const closeModal = () => showModal.value = false;
-
-// upload ảnh
-const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    form.value.image = file;
-
-    if (file) form.value.preview = URL.createObjectURL(file);
+const closeModal = () => {
+    showModal.value = false;
+    resetForm();
+    document.body.classList.remove("modal-open");
 };
 
-// lưu dữ liệu
-const saveBrand = () => {
-    loading.value = true;
-
-    setTimeout(() => {
-        if (isEditing.value) {
-            const index = brands.value.findIndex(b => b.id === form.value.id);
-            brands.value[index].name = form.value.name;
-            if (form.value.preview) brands.value[index].image = form.value.preview;
-        } else {
-            brands.value.push({
-                id: Date.now(),
-                name: form.value.name,
-                image: form.value.preview || "https://via.placeholder.com/80",
-            });
-        }
-
-        loading.value = false;
-        closeModal();
-    }, 700);
+const resetForm = () => {
+    form.value = { id: null, name: "", image: null, preview: null };
 };
+
+
 </script>
 
 <template>
-    <h1 class="page-title">Quản lý thương hiệu</h1>
+    <div class="container py-4">
 
-    <!-- Nút thêm -->
-    <button class="btn btn-primary btn-add" @click="openAddModal">
-        <i class="fa-solid fa-plus me-2"></i> Thêm thương hiệu
-    </button>
+        <h1 class="mb-4 fw-bold">Quản lý thương hiệu</h1>
 
-    <!-- DANH SÁCH THƯƠNG HIỆU -->
-    <div class="table-wrapper">
-        <table class="table-category">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Ảnh</th>
-                    <th>Tên thương hiệu</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
+        <!-- ✅ Nút thêm DANH MỤC nằm bên phải -->
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-primary mb-3 add-btn" @click="openAddModal">
+                <i class="fa-solid fa-plus me-2"></i> Thêm thương hiệu
+            </button>
+        </div>
 
-            <tbody>
-                <tr v-for="brand in brands" :key="brand.id">
-                    <td>{{ brand.id }}</td>
-                    <td><img :src="brand.image" class="cat-img"></td>
-                    <td>{{ brand.name }}</td>
-                    <td>
-                        <button class="btn-action btn-edit me-2" @click="openEditModal(brand)">
-                            <i class="fa-solid fa-pen"></i> Sửa
-                        </button>
+        <!-- ✅ Toolbar -->
+        <div class="toolbar d-flex align-items-center justify-content-between flex-wrap gap-3">
 
-                        <button class="btn-action btn-delete">
-                            <i class="fa-solid fa-trash"></i> Xóa
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+            <!-- Bộ lọc bên trái -->
+            <div class="d-flex align-items-center gap-4 flex-wrap">
 
-    <!-- MODAL -->
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    {{ isEditing ? "Chỉnh sửa thương hiệu" : "Thêm thương hiệu" }}
-                </h5>
-                <button class="btn-close" @click="closeModal">✕</button>
-            </div>
-
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Ảnh thương hiệu</label>
-
-                    <div class="image-upload">
-                        <label for="brandImage">
-                            <i class="fa-solid fa-upload me-1"></i> Chọn ảnh
-                        </label>
-                        <input type="file" id="brandImage" @change="handleFileUpload">
-                    </div>
-
-                    <div v-if="form.preview" class="preview-container">
-                        <img :src="form.preview" class="preview-img">
+                <!-- Hiển thị -->
+                <div class="toolbar-item d-flex align-items-center gap-2">
+                    <label class="fw-semibold">Hiển thị:</label>
+                    <div class="custom-select" tabindex="0" @click="toggleDropdown('perPage')"
+                        @blur="closeDropdown('perPage')">
+                        <div class="custom-select-trigger">
+                            <span>{{ query.perPage }}</span>
+                            <i class="fas fa-chevron-down arrow-icon" :class="{ rotated: dropdownOpen.perPage }"></i>
+                        </div>
+                        <div class="custom-options" :class="{ show: dropdownOpen.perPage }">
+                            <div class="custom-option" v-for="num in [5, 10, 20]" :key="num"
+                                :class="{ selected: query.perPage === num }"
+                                @mousedown.prevent="selectOption('perPage', num)">
+                                <i class="fas fa-check check-icon"></i>
+                                <span>{{ num }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Tên thương hiệu</label>
-                    <input v-model="form.name" type="text" class="form-control" placeholder="Nhập tên thương hiệu">
+                <!-- Sắp xếp -->
+                <div class="toolbar-item d-flex align-items-center gap-2">
+                    <label class="fw-semibold">Sắp xếp:</label>
+                    <div class="custom-select" tabindex="0" @click="toggleDropdown('sort')"
+                        @blur="closeDropdown('sort')">
+                        <div class="custom-select-trigger">
+                            <span>{{ getSortLabel(query.sort) }}</span>
+                            <i class="fas fa-chevron-down arrow-icon" :class="{ rotated: dropdownOpen.sort }"></i>
+                        </div>
+                        <div class="custom-options" :class="{ show: dropdownOpen.sort }">
+                            <div class="custom-option" v-for="(label, value) in sortLabels" :key="value"
+                                :class="{ selected: query.sort === value }"
+                                @mousedown.prevent="selectOption('sort', value)">
+                                <i class="fas fa-check check-icon"></i>
+                                <span>{{ label }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="modal-footer">
-                <button class="btn btn-secondary" @click="closeModal" :disabled="loading">Hủy</button>
-                <button class="btn btn-primary" @click="saveBrand" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    <i v-else class="fa-solid fa-save me-2"></i>
-                    {{ isEditing ? "Cập nhật" : "Thêm mới" }}
-                </button>
+            <!-- Tìm kiếm -->
+            <div class="toolbar-right">
+                <input v-model="query.search" type="text" @keyup.enter="search" placeholder="Tìm kiếm thương hiệu...">
             </div>
         </div>
+
+        <!-- Table -->
+        <div class="table-responsive bg-white shadow-sm rounded-4 p-3 mt-3">
+            <table class="table table-borderless align-middle text-center mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Ảnh</th>
+                        <th>Tên thương hiệu</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(cat, index) in categories" :key="cat.id" class="shadow-sm rounded-3 hover-lift">
+                        <td>{{ (query.page - 1) * query.perPage + index + 1 }}</td>
+                        <td><img :src="cat.img" class="rounded-3 cat-img"></td>
+                        <td class="text-center">{{ cat.name }}</td>
+
+                        <td>
+                            <button class="btn-action btn-edit" @click="openEditModal(cat)">
+                                <i class="fa-solid fa-pen"></i> Sửa
+                            </button>
+                            <button class="btn-action btn-delete" @click="deleteCategory(cat.id)">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <nav v-if="totalPages > 1" class="mt-3">
+                <ul class="pagination justify-content-center mb-0">
+                    <li v-for="page in totalPages" :key="page" class="page-item"
+                        :class="{ active: query.page === page }">
+                        <button class="page-link" @click="changePage(page)" :disabled="query.page === page">
+                            {{ page }}
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- ✅ MODAL (luôn đứng giữa không bị di chuyển) -->
+        <div v-if="showModal" class="modal d-flex" tabindex="-1" @click.self="closeModal">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title fw-bold">{{ isEditing ? 'Chỉnh sửa danh mục' : 'Thêm danh thương hiệu' }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Ảnh thương hiệu</label>
+                            <div class="d-flex gap-2 align-items-center">
+                                <label class="btn btn-sm btn-primary mb-0" for="categoryImage">
+                                    <i class="fa-solid fa-upload me-1"></i> Chọn ảnh
+                                </label>
+                                <input type="file" accept="image/*" id="categoryImage" @change="handleFileUpload"
+                                    hidden>
+                                <div v-if="form.preview">
+                                    <img :src="form.preview" class="rounded-3 cat-img-preview">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tên thương hiệu</label>
+                            <input v-model="form.name" type="text" class="form-control form-control-lg"
+                                placeholder="Nhập tên thương hiệu">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @click="closeModal" :disabled="loading">Hủy</button>
+                        <button class="btn btn-primary" @click="saveCategory" :disabled="loading">
+                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                            <i v-else class="fa-solid fa-save me-2"></i>
+                            {{ isEditing ? 'Cập nhật' : 'Thêm mới' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
 <style scoped>
-/* ===================== PAGE TITLE ===================== */
-.page-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 20px;
+/* ===================== NÚT + MODAL CỐ ĐỊNH ===================== */
+.modal {
+    position: fixed !important;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
 }
 
-/* ===================== NÚT THÊM ===================== */
-.btn-add {
-    margin-bottom: 18px;
-    padding: 10px 18px;
-    border-radius: 8px;
+/* Chặn scroll nền */
+:global(body.modal-open) {
+    overflow: hidden;
+}
+
+/* Giữ modal ở giữa */
+.modal-dialog {
+    margin: 0 !important;
+    max-width: 650px;
+    width: 100%;
+}
+
+/* ===================== PAGE WRAPPER ===================== */
+.container {
+    animation: fadeUp 0.6s ease forwards;
+    background: linear-gradient(145deg, #e8f0ff, #fdfdff);
+    min-height: 100vh;
+    padding: 60px 32px 80px;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ============================================================
+   PREMIUM ADMIN UI — DASHBOARD CATEGORY PAGE v2
+   ============================================================ */
+
+/* ===================== PAGE WRAPPER ===================== */
+.container {
+    animation: fadeUp 0.45s ease;
+    background: #f9fafb;
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+h1::before {
+    content: "\f02e";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 28px;
+    color: #3b82f6;
+}
+
+/* ===================== BUTTON: ADD ===================== */
+.btn.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    border: none;
+    border-radius: 16px;
+    font-weight: 700;
     font-size: 15px;
+    padding: 12px 26px;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.25);
+    transition: all 0.3s ease;
+}
+
+.btn.btn-primary:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 14px 35px rgba(59, 130, 246, 0.35);
+}
+
+/* ===================== TOOLBAR ===================== */
+.toolbar {
+    width: 100%;
+    padding: 16px 24px;
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.toolbar-item label {
+    font-size: 14px;
+    color: #475569;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.toolbar-right input {
+    width: 280px;
+    padding: 12px 18px 12px 44px;
+    border-radius: 14px;
+    border: 2px solid #e2e8f0;
+    font-size: 14px;
+    background-color: #ffffff;
+    background-image: url("https://cdn-icons-png.flaticon.com/512/622/622669.png");
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: 14px center;
+    transition: all 0.3s ease;
+}
+
+.toolbar-right input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.1);
+}
+
+/* ===================== CUSTOM DROPDOWN ===================== */
+.custom-select {
+    position: relative;
+    min-width: 180px;
+    cursor: pointer;
+    user-select: none;
     font-weight: 600;
 }
 
-/* ===================== TABLE WRAPPER ===================== */
-.table-wrapper {
+.custom-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
     background: #ffffff;
-    padding: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    font-size: 14px;
+    color: #1e293b;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-select-trigger:hover {
+    border-color: #3b82f6;
+    background-color: #f1f5ff;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.12);
+    transform: translateY(-1px);
+}
+
+.arrow-icon {
+    font-size: 12px;
+    color: #3b82f6;
+    transition: transform 0.3s ease;
+}
+
+.arrow-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.custom-options {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
     border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    margin-top: 20px;
-    overflow: hidden;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-12px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.custom-options.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.custom-option:hover {
+    background: #f0f9ff;
+    color: #0369a1;
+    font-weight: 600;
+}
+
+.custom-option.selected {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.check-icon {
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.custom-option.selected .check-icon {
+    opacity: 1;
+}
+
+/* Scrollbar */
+.custom-options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-options::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.custom-options::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 10px;
 }
 
 /* ===================== TABLE ===================== */
-.table-category {
+.table-responsive {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eef1f4;
+    overflow-x: auto;
+}
+
+table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 14px; /* tạo khoảng cách giữa các dòng */
+    border-spacing: 0 16px;
 }
 
-.table-category thead tr {
-    background: #f1f4f9;
-}
-
-.table-category th {
-    padding: 16px 20px;
-    font-weight: 700;
-    color: #333;
-    text-transform: uppercase;
-    font-size: 13px;
-}
-
-.table-category tbody tr {
-    background: #ffffff;
-    transition: 0.25s ease;
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
-}
-
-/* ✅ bo góc dòng */
-.table-category tbody tr td:first-child {
-    border-top-left-radius: 14px;
-    border-bottom-left-radius: 14px;
-}
-.table-category tbody tr td:last-child {
-    border-top-right-radius: 14px;
-    border-bottom-right-radius: 14px;
-}
-
-/* ===================== HOVER = nhảy lên ===================== */
-.table-category tbody tr:hover {
-    transform: translateY(-4px); /* nhảy lên */
-    background: #f6f9ff;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-}
-
-/* ===================== TABLE CELLS ===================== */
-.table-category td {
-    padding: 16px 20px;
-    vertical-align: middle;
+thead th {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 16px;
     font-size: 15px;
-    color: #333;
-    border: none; /* bỏ line cổ điển */
+    font-weight: 700;
+    border-radius: 14px;
+    text-transform: uppercase;
 }
 
-/* Ảnh danh mục */
-.cat-img {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    object-fit: cover;
-    border: 2px solid #e3e6eb;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: 0.25s;
-}
-
-/* Khi hover ảnh phóng nhẹ */
-.table-category tbody tr:hover .cat-img {
-    transform: scale(1.05);
-}
-
-
-/* Ảnh danh mục */
-.cat-img {
-    width: 55px;
-    height: 55px;
-    border-radius: 10px;
-    object-fit: cover;
-    border: 1px solid #ddd;
-}
-
-/* ===================== MODAL OVERLAY ===================== */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(3px);
-}
-
-/* ===================== MODAL CONTENT ===================== */
-.modal-content {
-    width: 720px;
+tbody tr {
     background: #ffffff;
-    border-radius: 26px;
-    overflow: hidden;
-    box-shadow: 0 12px 45px rgba(0, 0, 0, 0.22);
-    animation: fadeUp 0.25s ease;
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease-in-out;
 }
 
-/* Animation */
+tbody tr:hover {
+    background: #eaf2ff;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(37, 99, 235, 0.18);
+}
+
+td {
+    padding: 18px 16px;
+    font-size: 15px;
+}
+
+.cat-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    transition: 0.3s ease;
+}
+
+.cat-img:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.25);
+}
+
+/* ===================== ACTION BUTTONS ===================== */
+.btn-action {
+    border-radius: 14px;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    transition: 0.3s ease;
+    color: #ffffff;
+    margin: 0 4px;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.btn-edit:hover {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    transform: translateY(-2px) scale(1.02);
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+}
+
+.btn-delete:hover {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* ===================== MODAL ===================== */
+.modal-content {
+    border-radius: 28px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    padding: 22px;
+    color: #fff;
+}
+
+.modal-header h5::before {
+    content: "\f044";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 10px;
+}
+
+.cat-img-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 20px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* ===================== ANIMATIONS ===================== */
 @keyframes fadeUp {
     from {
         opacity: 0;
@@ -294,245 +600,208 @@ const saveBrand = () => {
     }
 }
 
-/* ===================== MODAL HEADER ===================== */
-.modal-header {
-    padding: 28px;
-    background: linear-gradient(135deg, #007bff, #2f8bff);
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 19px;
-    font-weight: 650;
+/* ===================== MISC ===================== */
+.add-btn {
+    float: right;
+    margin-bottom: 20px;
 }
 
-/* ✅ GIỮ LẠI CHỈ 1 `.btn-close` */
-.btn-close {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.25);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: 0.25s;
+/* ===================== ICON CHO PAGE TITLE ===================== */
+h1::before {
+    content: "\f02e";
+    /* list icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 50px;
+    /* tăng size */
+    color: #2563eb;
+    margin-right: 14px;
 }
 
-.btn-close i {
-    font-size: 20px;
-    color: white;
+/* ===================== ICON CHO TABLE HEADER ===================== */
+thead th::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 28px;
+    /* tăng size */
+    margin-right: 12px;
 }
 
-.btn-close:hover {
-    background: rgba(255, 255, 255, 0.45);
-    transform: scale(1.1);
+thead th:nth-child(1)::before {
+    content: "\f0ae";
+    color: #2563eb;
 }
 
-/* ===================== MODAL BODY ===================== */
-.modal-body {
-    padding: 30px;
-    background: #ffffff;
+/* # */
+thead th:nth-child(2)::before {
+    content: "\f03e";
+    color: #3b82f6;
 }
 
-.modal-body .form-label {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 6px;
+/* ảnh */
+thead th:nth-child(3)::before {
+    content: "\f02b";
+    color: #16a34a;
 }
 
-.modal-body input[type="text"] {
-    height: 54px;
-    border-radius: 14px;
-    padding-left: 16px;
-    width: 100%;
-    border: 1px solid #d0d5dd;
-    transition: 0.25s;
-    font-size: 16px;
+/* tags */
+thead th:nth-child(4)::before {
+    content: "\f085";
+    color: #ef4444;
 }
 
-.modal-body input[type="text"]:hover {
-    border-color: #bcd1ff;
+/* cogs */
+
+/* ===================== ICON CHO BUTTONS ===================== */
+.btn.btn-primary i.fa-plus {
+    font-size: 24px;
+    /* tăng size */
+    margin-right: 10px;
+    color: #fff;
 }
 
-.modal-body input[type="text"]:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.18);
+.btn-action.btn-edit i.fa-pen {
+    font-size: 22px;
+    /* tăng size */
+    margin-right: 8px;
+    color: #ffffff;
 }
 
-/* ===================== UPLOAD IMAGE ===================== */
-.image-upload label {
+.btn-action.btn-delete i.fa-trash {
+    font-size: 22px;
+    /* tăng size */
+    margin-right: 8px;
+    color: #ffffff;
+}
+
+/* ===================== ICON CHO MODAL HEADER ===================== */
+.modal-header h5::before {
+    content: "\f044";
+    /* edit icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 32px;
+    /* tăng size */
+    margin-right: 14px;
+    color: #fff;
+}
+
+/* ===================== ICON CHO DROPDOWN ===================== */
+.custom-select-trigger::before {
+    content: "\f0dc";
+    /* sort icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 24px;
+    /* tăng size */
+    color: #3b82f6;
+    margin-right: 12px;
     display: inline-block;
-    padding: 12px 18px;
-    background: linear-gradient(135deg, #007bff, #3393ff);
-    color: #fff;
-    border-radius: 14px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-    transition: 0.25s;
-    border: none;
+    vertical-align: middle;
 }
 
-.image-upload label:hover {
-    opacity: 0.9;
+/* ===================== ICON CHO FILE UPLOAD ===================== */
+#categoryImage+div img::before {
+    content: "\f03e";
+    /* image icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 30px;
+    /* tăng size */
+    color: #3b82f6;
+    margin-right: 10px;
 }
 
-.image-upload input {
-    display: none;
+/* ===================== ICON CHO DROPDOWN OPTIONS ===================== */
+.custom-options .custom-option::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 22px;
+    /* tăng size */
+    color: #3b82f6;
+    margin-right: 12px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.preview-container {
-    margin-top: 14px;
+/* ===================== ICON CHO LABELS ===================== */
+.toolbar-item label::before,
+.toolbar-item:nth-child(2) label::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 20px;
+    /* tăng size */
+    color: #3b82f6;
+    margin-right: 10px;
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.preview-img {
-    width: 150px;
-    height: 150px;
-    border-radius: 16px;
-    object-fit: cover;
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* ===================== MODAL FOOTER ===================== */
-.modal-footer {
-    padding: 22px 30px;
-    background: #f7f8fa;
-    display: flex;
-    justify-content: flex-end;
-    gap: 14px;
-    border-top: 1px solid #e6e6e6;
-    border-bottom-left-radius: 26px;
-    border-bottom-right-radius: 26px;
-}
-
-.btn-secondary {
-    height: 48px;
-    padding: 0 28px;
-    border-radius: 14px;
-    font-size: 16px;
-    background: #e3e5e8;
-    color: #2d2d2d;
-    font-weight: 600;
-    border: none;
-    transition: 0.25s;
-}
-
-.btn-secondary:hover {
-    background: #d2d4d9;
-}
-
-.btn-primary {
-    height: 48px;
-    padding: 0 28px;
-    border-radius: 14px;
-    font-size: 16px;
-    background: linear-gradient(135deg, #007bff, #3094ff);
-    font-weight: 600;
-    border: none;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(0, 123, 255, 0.3);
-    transition: 0.25s;
-}
-
-.btn-primary:hover {
-    opacity: 0.9;
-    box-shadow: 0 6px 22px rgba(0, 123, 255, 0.35);
-}
-/* ===================== ACTION BUTTONS ===================== */
-.btn-action {
-    padding: 8px 16px;
-    border-radius: 12px;
+/* Icon bên trái chữ Hiển thị */
+.toolbar-item label::before {
+    content: "\f06e";
+    /* Font Awesome icon: eye (hiển thị) */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 6px;
     font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border: none;
-    transition: 0.25s ease-in-out;
-    min-width: 70px;
+    color: #3b82f6;
+    vertical-align: middle;
 }
 
-/* ✅ Núts màu xanh dương (Sửa) */
-.btn-edit {
-    background: linear-gradient(135deg, #2f81f7, #007bff);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.35);
+/* Icon bên trái chữ Hiển thị */
+.toolbar-item label::before {
+    content: "\f06e";
+    /* Font Awesome icon: eye */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 8px;
+    font-size: 20px;
+    /* tăng size */
+    color: #3b82f6;
+    vertical-align: middle;
 }
 
-.btn-edit:hover {
-    background: linear-gradient(135deg, #0066d6, #0056b3);
-    transform: translateY(-2px);
+/* Riêng cho label Sắp xếp */
+.toolbar-item:nth-child(2) label::before {
+    content: "\f161";
+    /* Font Awesome icon: sort */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 8px;
+    font-size: 20px;
+    /* tăng size */
+    color: #3b82f6;
+    vertical-align: middle;
 }
 
-/* ✅ Nút Xóa màu xanh nhạt (để đồng bộ theme) */
-.btn-delete {
-    background: linear-gradient(135deg, #8dc6ff, #4aa3ff);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(74, 163, 255, 0.35);
+.custom-options .custom-option:nth-child(1)::before {
+    content: "\f017";
+    /* clock icon cho "Mới nhất" */
 }
 
-.btn-delete:hover {
-    background: linear-gradient(135deg, #5c9df7, #2d87f5);
-    transform: translateY(-2px);
+.custom-options .custom-option:nth-child(2)::before {
+    content: "\f017";
+    /* clock-rotate-left cho "Cũ nhất" */
 }
 
-/* ✅ Table căn giữa chữ và icon */
-/* Bảng cố định kích thước cột */
-.table-category {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 14px;
-    table-layout: fixed; /* ✅ FIX QUAN TRỌNG */
+.custom-options .custom-option:nth-child(3)::before {
+    content: "\f0de";
+    /* arrow-up-wide-short cho "Tên A→Z" */
 }
 
-/* Định nghĩa width từng cột chuẩn đẹp */
-.table-category th:nth-child(1),
-.table-category td:nth-child(1) {
-    width: 80px;           /* ID */
-    text-align: left;
+.custom-options .custom-option:nth-child(4)::before {
+    content: "\f0dd";
+    /* arrow-down-wide-short cho "Tên Z→A" */
 }
 
-.table-category th:nth-child(2),
-.table-category td:nth-child(2) {
-    width: 120px;          /* Ảnh */
-    text-align: center;
+.custom-options .custom-option::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 8px;
+    font-size: 14px;
+    display: inline-block;
+    vertical-align: middle;
+    color: #3b82f6;
 }
-
-.table-category th:nth-child(3),
-.table-category td:nth-child(3) {
-    width: auto;           /* Tên danh mục – tự giãn */
-    text-align: left;
-}
-
-.table-category th:nth-child(4),
-.table-category td:nth-child(4) {
-    width: 180px;         /* Hành động */
-    text-align: center;
-}
-
-/* Căn giữa toàn bộ tiêu đề và dữ liệu */
-.table-category th,
-.table-category td {
-    text-align: center !important;
-}
-
-/* Bảng cố định layout tránh lệch */
-.table-category {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 14px;
-    table-layout: fixed;
-}
-
-/* Cột ảnh – giữ size cố định */
-.table-category td:nth-child(2) img {
-    margin: 0 auto; /* đảm bảo ảnh vào giữa */
-}
-
-
 </style>
