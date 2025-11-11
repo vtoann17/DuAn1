@@ -1,112 +1,129 @@
 <script setup>
-import { ref } from "vue";
+import { ref, reactive, computed } from 'vue';
+
 definePageMeta({ layout: "admin" });
 
-// trạng thái
-const loading = ref(false);
-const showModal = ref(false);
-const isEditing = ref(false);
+// ===== DATA MOCK =====
+const products = ref([
+  { id: 1, name: "iPhone 15", img: "https://via.placeholder.com/80", idCategory: 1, idBrand: 1 },
+  { id: 2, name: "Galaxy S23", img: "https://via.placeholder.com/80", idCategory: 1, idBrand: 2 },
+  { id: 3, name: "MacBook Pro", img: "https://via.placeholder.com/80", idCategory: 2, idBrand: 1 },
+  { id: 4, name: "AirPods Pro", img: "https://via.placeholder.com/80", idCategory: 3, idBrand: 1 },
+  { id: 5, name: "ThinkPad X1", img: "https://via.placeholder.com/80", idCategory: 2, idBrand: 3 }
+]);
 
-// dữ liệu mẫu
-const categories = ref([
+const categories = [
   { id: 1, name: "Điện thoại" },
   { id: 2, name: "Laptop" },
-]);
+  { id: 3, name: "Phụ kiện" }
+];
 
-const brands = ref([
+const brands = [
   { id: 1, name: "Apple" },
   { id: 2, name: "Samsung" },
-]);
+  { id: 3, name: "Lenovo" }
+];
 
-const products = ref([
-  { id: 1, idCategory: 1, idBrand: 1, name: "iPhone 14", img: "https://via.placeholder.com/80" },
-  { id: 2, idCategory: 2, idBrand: 2, name: "Samsung Galaxy Book", img: "https://via.placeholder.com/80" },
-]);
+// ===== STATE =====
+const query = reactive({ search: '', perPage: 5, sort: 'descID', page: 1 });
+const dropdownOpen = reactive({ perPage: false, sort: false });
+const sortLabels = { 'descID': 'Mới nhất', 'ascID': 'Cũ nhất', 'ascName': 'Tên A → Z', 'descName': 'Tên Z → A' };
+const showModal = ref(false);
+const isEditing = ref(false);
+const loading = ref(false);
 
-// form
-const form = ref({
-  id: null,
-  idCategory: null,
-  idBrand: null,
-  name: "",
-  imgFile: null,
-  preview: null,
-});
+const form = ref({ id: null, name: '', img: null, preview: null, idCategory: null, idBrand: null });
 
-// mở modal thêm
-const openAddModal = () => {
-  isEditing.value = false;
-  form.value = { id: null, idCategory: null, idBrand: null, name: "", imgFile: null, preview: null };
-  showModal.value = true;
-};
+// ===== FUNCTIONS =====
+const getSortLabel = (value) => sortLabels[value] || "Mới nhất";
 
-// mở modal sửa
-const openEditModal = (product) => {
-  isEditing.value = true;
-  form.value = {
-    id: product.id,
-    idCategory: product.idCategory,
-    idBrand: product.idBrand,
-    name: product.name,
-    imgFile: null,
-    preview: product.img,
-  };
-  showModal.value = true;
-};
+const toggleDropdown = (type) => dropdownOpen[type] = !dropdownOpen[type];
+const closeDropdown = (type) => setTimeout(() => dropdownOpen[type] = false, 200);
+const selectOption = (type, value) => { query[type] = value; dropdownOpen[type] = false; };
 
-const closeModal = () => showModal.value = false;
+const openAddModal = () => { isEditing.value = false; resetForm(); showModal.value = true; document.body.classList.add("modal-open"); };
+const openEditModal = (product) => { isEditing.value = true; form.value = { ...product, img: null, preview: product.img }; showModal.value = true; document.body.classList.add("modal-open"); };
+const closeModal = () => { showModal.value = false; resetForm(); document.body.classList.remove("modal-open"); };
+const resetForm = () => { form.value = { id: null, name: '', img: null, preview: null, idCategory: null, idBrand: null }; };
 
-// upload ảnh
-const handleFileUpload = (e) => {
-  const file = e.target.files[0];
-  form.value.imgFile = file;
-  if (file) form.value.preview = URL.createObjectURL(file);
-};
+const handleFileUpload = (e) => { const file = e.target.files[0]; form.value.img = file; if(file) form.value.preview = URL.createObjectURL(file); };
 
-// lưu sản phẩm
 const saveProduct = () => {
-  loading.value = true;
-  setTimeout(() => {
-    if (isEditing.value) {
-      const index = products.value.findIndex(p => p.id === form.value.id);
-      products.value[index].name = form.value.name;
-      products.value[index].idCategory = form.value.idCategory;
-      products.value[index].idBrand = form.value.idBrand;
-      if (form.value.preview) products.value[index].img = form.value.preview;
-    } else {
-      products.value.push({
-        id: Date.now(),
-        idCategory: form.value.idCategory,
-        idBrand: form.value.idBrand,
-        name: form.value.name,
-        img: form.value.preview || "https://via.placeholder.com/80",
-      });
-    }
-    loading.value = false;
-    closeModal();
-  }, 700);
+  if(isEditing.value){
+    const idx = products.value.findIndex(p => p.id === form.value.id);
+    products.value[idx] = { id: form.value.id, name: form.value.name, img: form.value.preview, idCategory: form.value.idCategory, idBrand: form.value.idBrand };
+  } else {
+    products.value.push({ id: products.value.length + 1, name: form.value.name, img: form.value.preview || 'https://via.placeholder.com/80', idCategory: form.value.idCategory, idBrand: form.value.idBrand });
+  }
+  closeModal();
 };
 
-// xóa sản phẩm
-const deleteProduct = (id) => {
-  products.value = products.value.filter(p => p.id !== id);
-};
+const deleteProduct = (id) => { products.value = products.value.filter(p => p.id !== id); };
 
-// lấy tên danh mục/brand
-const getCategoryName = (id) => categories.value.find(c => c.id === id)?.name || "";
-const getBrandName = (id) => brands.value.find(b => b.id === id)?.name || "";
+// ===== COMPUTED =====
+const filteredProducts = computed(() => {
+  let list = products.value.filter(p => p.name.toLowerCase().includes(query.search.toLowerCase()));
+  if(query.sort==='ascID') list.sort((a,b)=>a.id-b.id);
+  if(query.sort==='descID') list.sort((a,b)=>b.id-a.id);
+  if(query.sort==='ascName') list.sort((a,b)=>a.name.localeCompare(b.name));
+  if(query.sort==='descName') list.sort((a,b)=>b.name.localeCompare(a.name));
+  return list.slice((query.page-1)*query.perPage, query.page*query.perPage);
+});
+const totalPages = computed(()=>Math.ceil(products.value.filter(p=>p.name.toLowerCase().includes(query.search.toLowerCase())).length/query.perPage));
+const changePage = (page) => query.page = page;
 </script>
 
 <template>
-  <h1 class="page-title">Quản lý sản phẩm</h1>
+<div class="container py-4">
+  <h1 class="mb-4 fw-bold">Quản lý sản phẩm</h1>
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-primary" @click="openAddModal"><i class="fa-solid fa-plus me-2"></i> Thêm sản phẩm</button>
+  </div>
 
-  <button class="btn btn-primary btn-add" @click="openAddModal">
-    <i class="fa-solid fa-plus me-2"></i> Thêm sản phẩm
-  </button>
+  <!-- Toolbar -->
+  <div class="toolbar d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-4 flex-wrap">
+      <div class="toolbar-item d-flex align-items-center gap-2">
+        <label>Hiển thị:</label>
+        <div class="custom-select" tabindex="0" @click="toggleDropdown('perPage')" @blur="closeDropdown('perPage')">
+          <div class="custom-select-trigger">
+            <span>{{ query.perPage }}</span>
+            <i class="fas fa-chevron-down arrow-icon" :class="{ rotated: dropdownOpen.perPage }"></i>
+          </div>
+          <div class="custom-options" :class="{ show: dropdownOpen.perPage }">
+            <div class="custom-option" v-for="num in [5,10,20]" :key="num" :class="{ selected: query.perPage===num }" @mousedown.prevent="selectOption('perPage', num)">
+              <i class="fas fa-check check-icon"></i>
+              <span>{{ num }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <div class="table-wrapper">
-    <table class="table-category">
-      <thead>
+      <div class="toolbar-item d-flex align-items-center gap-2">
+        <label>Sắp xếp:</label>
+        <div class="custom-select" tabindex="0" @click="toggleDropdown('sort')" @blur="closeDropdown('sort')">
+          <div class="custom-select-trigger">
+            <span>{{ getSortLabel(query.sort) }}</span>
+            <i class="fas fa-chevron-down arrow-icon" :class="{ rotated: dropdownOpen.sort }"></i>
+          </div>
+          <div class="custom-options" :class="{ show: dropdownOpen.sort }">
+            <div class="custom-option" v-for="(label,value) in sortLabels" :key="value" :class="{ selected: query.sort===value }" @mousedown.prevent="selectOption('sort',value)">
+              <i class="fas fa-check check-icon"></i>
+              <span>{{ label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <input type="text" v-model="query.search" placeholder="Tìm kiếm sản phẩm...">
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive bg-white shadow-sm rounded-4 p-3 mt-3">
+    <table class="table table-borderless align-middle text-center mb-0">
+      <thead class="table-light">
         <tr>
           <th>#</th>
           <th>Ảnh</th>
@@ -117,536 +134,623 @@ const getBrandName = (id) => brands.value.find(b => b.id === id)?.name || "";
         </tr>
       </thead>
       <tbody>
-        <tr v-for="product in products" :key="product.id">
-          <td>{{ product.id }}</td>
-          <td><img :src="product.img" class="cat-img"></td>
-          <td>{{ product.name }}</td>
-          <td>{{ getCategoryName(product.idCategory) }}</td>
-          <td>{{ getBrandName(product.idBrand) }}</td>
+        <tr v-for="(p, idx) in filteredProducts" :key="p.id" class="shadow-sm rounded-3 hover-lift">
+          <td>{{ (query.page-1)*query.perPage + idx + 1 }}</td>
+          <td><img :src="p.img" class="rounded-3 cat-img"></td>
+          <td>{{ p.name }}</td>
+          <td>{{ categories.find(c=>c.id===p.idCategory)?.name }}</td>
+          <td>{{ brands.find(b=>b.id===p.idBrand)?.name }}</td>
           <td>
-            <button class="btn-action btn-edit me-2" @click="openEditModal(product)">
-              <i class="fa-solid fa-pen"></i> Sửa
-            </button>
-            <button class="btn-action btn-delete" @click="deleteProduct(product.id)">
-              <i class="fa-solid fa-trash"></i> Xóa
-            </button>
+            <button class="btn-action btn-edit" @click="openEditModal(p)"><i class="fa-solid fa-pen"></i> Sửa</button>
+            <button class="btn-action btn-delete" @click="deleteProduct(p.id)"><i class="fa-solid fa-trash"></i> Xóa</button>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <nav v-if="totalPages>1" class="mt-3">
+      <ul class="pagination justify-content-center mb-0">
+        <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: query.page===page }">
+          <button class="page-link" @click="changePage(page)">{{ page }}</button>
+        </li>
+      </ul>
+    </nav>
   </div>
 
   <!-- Modal -->
-  <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ isEditing ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới" }}</h5>
-        <button class="btn-close" @click="closeModal">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Danh mục</label>
-          <select v-model="form.idCategory" class="form-control">
-            <option value="" disabled>Chọn danh mục</option>
-            <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
+  <div v-if="showModal" class="modal d-flex" tabindex="-1" @click.self="closeModal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">{{ isEditing ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới' }}</h5>
+          <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
         </div>
-
-        <div class="mb-3">
-          <label class="form-label">Thương hiệu</label>
-          <select v-model="form.idBrand" class="form-control">
-            <option value="" disabled>Chọn thương hiệu</option>
-            <option v-for="b in brands" :key="b.id" :value="b.id">{{ b.name }}</option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Tên sản phẩm</label>
-          <input v-model="form.name" type="text" class="form-control" placeholder="Nhập tên sản phẩm">
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Ảnh sản phẩm</label>
-          <div class="image-upload">
-            <label for="productImage"><i class="fa-solid fa-upload me-1"></i> Chọn ảnh</label>
-            <input type="file" id="productImage" @change="handleFileUpload">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Ảnh sản phẩm</label>
+            <div class="d-flex gap-2 align-items-center">
+              <label class="btn btn-sm btn-primary mb-0" for="productImage"><i class="fa-solid fa-upload me-1"></i> Chọn ảnh</label>
+              <input type="file" accept="image/*" id="productImage" @change="handleFileUpload" hidden>
+              <div v-if="form.preview"><img :src="form.preview" class="rounded-3 cat-img-preview"></div>
+            </div>
           </div>
-          <div v-if="form.preview" class="preview-container">
-            <img :src="form.preview" class="preview-img">
-          </div>
+          <div class="mb-3"><label class="form-label fw-semibold">Tên sản phẩm</label><input v-model="form.name" type="text" class="form-control form-control-lg" placeholder="Nhập tên sản phẩm"></div>
+          <div class="mb-3"><label class="form-label fw-semibold">Danh mục</label><select v-model="form.idCategory" class="form-select"><option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option></select></div>
+          <div class="mb-3"><label class="form-label fw-semibold">Thương hiệu</label><select v-model="form.idBrand" class="form-select"><option v-for="b in brands" :key="b.id" :value="b.id">{{ b.name }}</option></select></div>
         </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" @click="closeModal" :disabled="loading">Hủy</button>
-        <button class="btn btn-primary" @click="saveProduct" :disabled="loading">
-          <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-          <i v-else class="fa-solid fa-save me-2"></i>
-          {{ isEditing ? "Cập nhật" : "Thêm mới" }}
-        </button>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeModal" :disabled="loading">Hủy</button>
+          <button class="btn btn-primary" @click="saveProduct" :disabled="loading">{{ isEditing ? 'Cập nhật' : 'Thêm mới' }}</button>
+        </div>
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <style scoped>
-/* ===================== PAGE TITLE ===================== */
-.page-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 20px;
+/* ===================== PAGE WRAPPER ===================== */
+.container {
+    animation: fadeUp 0.45s ease;
+    background: #f5f7ff;
+    min-height: 100vh;
+    padding: 60px 32px 80px;
+    font-family: 'Inter', sans-serif;
 }
 
-/* ===================== NÚT THÊM ===================== */
-.btn-add {
-    margin-bottom: 18px;
-    padding: 10px 18px;
-    border-radius: 8px;
+/* PAGE TITLE */
+h1 {
+    font-size: 32px;
+    font-weight: 900;
+    color: #1e3a8a;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+h1::before {
+    content: "\f07a"; /* icon sản phẩm */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 48px;
+    color: #3b82f6;
+}
+
+/* ===================== BUTTON: ADD ===================== */
+.btn.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    border: none;
+    border-radius: 16px;
+    font-weight: 700;
     font-size: 15px;
+    padding: 12px 26px;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.25);
+    transition: all 0.3s ease;
+}
+
+.btn.btn-primary:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 14px 35px rgba(59, 130, 246, 0.35);
+}
+
+/* ===================== TOOLBAR ===================== */
+.toolbar {
+    width: 100%;
+    padding: 16px 24px;
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #dbeafe;
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.toolbar-item label {
+    font-size: 14px;
+    color: #334155;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Search input */
+.toolbar-right input {
+    width: 280px;
+    padding: 12px 18px 12px 44px;
+    border-radius: 14px;
+    border: 2px solid #dbeafe;
+    font-size: 14px;
+    background-color: #ffffff;
+    background-image: url("https://cdn-icons-png.flaticon.com/512/622/622669.png");
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: 14px center;
+    transition: all 0.3s ease;
+}
+
+.toolbar-right input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15);
+}
+
+/* ===================== CUSTOM DROPDOWN ===================== */
+.custom-select {
+    position: relative;
+    min-width: 180px;
+    cursor: pointer;
+    user-select: none;
     font-weight: 600;
 }
 
-/* ===================== TABLE WRAPPER ===================== */
-.table-wrapper {
+.custom-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
     background: #ffffff;
-    padding: 20px;
+    border: 2px solid #dbeafe;
+    border-radius: 14px;
+    font-size: 14px;
+    color: #1e3a8a;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    transition: all 0.3s ease;
+}
+
+.custom-select-trigger:hover {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.12);
+}
+
+.arrow-icon {
+    font-size: 12px;
+    color: #3b82f6;
+    transition: transform 0.3s ease;
+}
+
+.arrow-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.custom-options {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
     border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    margin-top: 20px;
-    overflow: hidden;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-12px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.custom-options.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.custom-option:hover {
+    background: #eff6ff;
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.custom-option.selected {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.custom-options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-options::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%);
+    border-radius: 10px;
 }
 
 /* ===================== TABLE ===================== */
-.table-category {
+.table-responsive {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 14px 36px rgba(59, 130, 246, 0.1);
+    border: 1px solid #e2e8f0;
+    overflow-x: auto;
+}
+
+table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 14px; /* tạo khoảng cách giữa các dòng */
+    border-spacing: 0 16px;
 }
 
-.table-category thead tr {
-    background: #f1f4f9;
-}
-
-.table-category th {
-    padding: 16px 20px;
+thead th {
+    background: #eff6ff;
+    color: #1e3a8a;
+    padding: 16px;
+    font-size: 15px;
     font-weight: 700;
-    color: #333;
+    border-radius: 14px;
     text-transform: uppercase;
-    font-size: 13px;
 }
 
-.table-category tbody tr {
+tbody tr {
     background: #ffffff;
-    transition: 0.25s ease;
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease-in-out;
 }
 
-/* ✅ bo góc dòng */
-.table-category tbody tr td:first-child {
-    border-top-left-radius: 14px;
-    border-bottom-left-radius: 14px;
-}
-.table-category tbody tr td:last-child {
-    border-top-right-radius: 14px;
-    border-bottom-right-radius: 14px;
+tbody tr:hover {
+    background: #eff6ff;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(59, 130, 246, 0.18);
 }
 
-/* ===================== HOVER = nhảy lên ===================== */
-.table-category tbody tr:hover {
-    transform: translateY(-4px); /* nhảy lên */
-    background: #f6f9ff;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-}
-
-/* ===================== TABLE CELLS ===================== */
-.table-category td {
-    padding: 16px 20px;
-    vertical-align: middle;
+td {
+    padding: 18px 16px;
     font-size: 15px;
-    color: #333;
-    border: none; /* bỏ line cổ điển */
 }
 
-/* Ảnh danh mục */
 .cat-img {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
-    border: 2px solid #e3e6eb;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: 0.25s;
-}
-
-/* Khi hover ảnh phóng nhẹ */
-.table-category tbody tr:hover .cat-img {
-    transform: scale(1.05);
-}
-
-
-/* Ảnh danh mục */
-.cat-img {
-    width: 55px;
-    height: 55px;
-    border-radius: 10px;
-    object-fit: cover;
-    border: 1px solid #ddd;
-}
-
-/* ===================== MODAL OVERLAY ===================== */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(3px);
-}
-
-/* ===================== MODAL CONTENT ===================== */
-.modal-content {
-    width: 720px;
-    background: #ffffff;
-    border-radius: 26px;
-    overflow: hidden;
-    box-shadow: 0 12px 45px rgba(0, 0, 0, 0.22);
-    animation: fadeUp 0.25s ease;
-}
-
-/* Animation */
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ===================== MODAL HEADER ===================== */
-.modal-header {
-    padding: 28px;
-    background: linear-gradient(135deg, #007bff, #2f8bff);
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 19px;
-    font-weight: 650;
-}
-
-/* ✅ GIỮ LẠI CHỈ 1 `.btn-close` */
-.btn-close {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.25);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: 0.25s;
-}
-
-.btn-close i {
-    font-size: 20px;
-    color: white;
-}
-
-.btn-close:hover {
-    background: rgba(255, 255, 255, 0.45);
-    transform: scale(1.1);
-}
-
-/* ===================== MODAL BODY ===================== */
-.modal-body {
-    padding: 30px;
-    background: #ffffff;
-}
-
-.modal-body .form-label {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 6px;
-}
-
-.modal-body input[type="text"] {
-    height: 54px;
-    border-radius: 14px;
-    padding-left: 16px;
-    width: 100%;
-    border: 1px solid #d0d5dd;
-    transition: 0.25s;
-    font-size: 16px;
-}
-
-.modal-body input[type="text"]:hover {
-    border-color: #bcd1ff;
-}
-
-.modal-body input[type="text"]:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.18);
-}
-
-/* ===================== UPLOAD IMAGE ===================== */
-.image-upload label {
-    display: inline-block;
-    padding: 12px 18px;
-    background: linear-gradient(135deg, #007bff, #3393ff);
-    color: #fff;
-    border-radius: 14px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-    transition: 0.25s;
-    border: none;
-}
-
-.image-upload label:hover {
-    opacity: 0.9;
-}
-
-.image-upload input {
-    display: none;
-}
-
-.preview-container {
-    margin-top: 14px;
-}
-
-.preview-img {
-    width: 150px;
-    height: 150px;
     border-radius: 16px;
-    object-fit: cover;
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid #bfdbfe;
+    transition: 0.3s ease;
 }
 
-/* ===================== MODAL FOOTER ===================== */
-.modal-footer {
-    padding: 22px 30px;
-    background: #f7f8fa;
-    display: flex;
-    justify-content: flex-end;
-    gap: 14px;
-    border-top: 1px solid #e6e6e6;
-    border-bottom-left-radius: 26px;
-    border-bottom-right-radius: 26px;
+.cat-img:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 22px rgba(96, 165, 250, 0.35);
 }
 
-.btn-secondary {
-    height: 48px;
-    padding: 0 28px;
-    border-radius: 14px;
-    font-size: 16px;
-    background: #e3e5e8;
-    color: #2d2d2d;
-    font-weight: 600;
-    border: none;
-    transition: 0.25s;
-}
-
-.btn-secondary:hover {
-    background: #d2d4d9;
-}
-
-.btn-primary {
-    height: 48px;
-    padding: 0 28px;
-    border-radius: 14px;
-    font-size: 16px;
-    background: linear-gradient(135deg, #007bff, #3094ff);
-    font-weight: 600;
-    border: none;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(0, 123, 255, 0.3);
-    transition: 0.25s;
-}
-
-.btn-primary:hover {
-    opacity: 0.9;
-    box-shadow: 0 6px 22px rgba(0, 123, 255, 0.35);
-}
 /* ===================== ACTION BUTTONS ===================== */
 .btn-action {
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 14px;
+    border-radius: 14px;
+    padding: 10px 20px;
     font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+    font-size: 14px;
     border: none;
-    transition: 0.25s ease-in-out;
-    min-width: 70px;
+    color: #ffffff;
+    margin: 0 4px;
+    transition: 0.3s ease;
 }
 
-/* ✅ Núts màu xanh dương (Sửa) */
 .btn-edit {
-    background: linear-gradient(135deg, #2f81f7, #007bff);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.35);
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
 }
 
 .btn-edit:hover {
-    background: linear-gradient(135deg, #0066d6, #0056b3);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    transform: translateY(-2px) scale(1.02);
 }
 
-/* ✅ Nút Xóa màu xanh nhạt (để đồng bộ theme) */
 .btn-delete {
-    background: linear-gradient(135deg, #8dc6ff, #4aa3ff);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(74, 163, 255, 0.35);
+    background: linear-gradient(135deg, #ef4444, #f87171);
 }
 
 .btn-delete:hover {
-    background: linear-gradient(135deg, #5c9df7, #2d87f5);
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* ===================== MODAL ===================== */
+.modal {
+    position: fixed !important;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(6px);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+:global(body.modal-open) {
+    overflow: hidden;
+}
+
+.modal-dialog {
+    margin: 0 !important;
+    max-width: 650px;
+    width: 100%;
+}
+
+.modal-content {
+    border-radius: 28px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    padding: 22px;
+    color: #fff;
+}
+
+.modal-header h5::before {
+    content: "\f07a";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 32px;
+    margin-right: 14px;
+}
+
+/* Product preview */
+.cat-img-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 20px;
+    border: 2px solid #dbeafe;
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);
+}
+
+/* ===================== ICONS IN TABLE HEADER ===================== */
+thead th::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 22px;
+    margin-right: 10px;
+}
+
+thead th:nth-child(1)::before { content: "\f0ae"; color: #3b82f6; }
+thead th:nth-child(2)::before { content: "\f03e"; color: #2563eb; }
+thead th:nth-child(3)::before { content: "\f02b"; color: #1d4ed8; }
+thead th:nth-child(4)::before { content: "\f022"; color: #0ea5e9; }
+thead th:nth-child(5)::before { content: "\f5b0"; color: #3b82f6; }
+thead th:nth-child(6)::before { content: "\f085"; color: #ef4444; }
+
+/* ===================== ICON LABEL TOOLBAR ===================== */
+.toolbar-item label::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 8px;
+    font-size: 18px;
+    vertical-align: middle;
+    color: #3b82f6;
+}
+
+.toolbar-item label::before { content: "\f06e"; } /* icon mắt */
+.toolbar-item:nth-child(2) label::before { content: "\f161"; } /* sort */
+
+/* ===================== ICON DROPDOWN ===================== */
+.custom-select-trigger::before {
+    content: "\f0dc";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 18px;
+    color: #3b82f6;
+    margin-right: 10px;
+}
+
+/* ===================== ANIMATIONS ===================== */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ===========================================================
+   ✅ ĐỒNG BỘ ICON CHUẨN THEO TRANG DANH MỤC
+   CHO TRANG QUẢN LÝ SẢN PHẨM
+   =========================================================== */
+
+/* ===================== ICON PAGE TITLE ===================== */
+h1::before {
+    content: "\f07a"; /* icon hộp sản phẩm */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 48px;
+    color: #3b82f6; /* xanh da trời */
+    margin-right: 14px;
+}
+
+/* ===================== ICON TABLE HEADER ===================== */
+thead th::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 22px;
+    margin-right: 10px;
+    color: #3b82f6; /* xanh da trời */
+}
+
+/* ===================== ICON BUTTONS (TRẮNG) ===================== */
+.btn.btn-primary i.fa-plus,
+.btn-action.btn-edit i.fa-pen,
+.btn-action.btn-delete i.fa-trash {
+    font-size: 18px;
+    margin-right: 8px;
+    color: #ffffff; /* trắng */
+}
+
+/* ===================== ICON LABEL TOOLBAR ===================== */
+.toolbar-item label::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 8px;
+    font-size: 18px;
+    vertical-align: middle;
+    color: #3b82f6; /* xanh da trời */
+}
+
+/* Icon cho chữ "Hiển thị" */
+.toolbar-item label::before {
+    content: "\f06e"; /* icon con mắt */
+}
+
+/* Icon cho chữ "Sắp xếp" */
+.toolbar-item:nth-child(2) label::before {
+    content: "\f161"; /* icon sort */
+}
+
+/* ===================== ICON DROPDOWN ===================== */
+.custom-select-trigger::before {
+    content: "\f0dc"; /* dropdown icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 18px;
+    color: #3b82f6; /* xanh da trời */
+    margin-right: 10px;
+}
+
+/* ===================== ICON DROPDOWN OPTION ===================== */
+.custom-options .custom-option::before {
+    content: "\f00c"; /* check icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    opacity: 0;
+    margin-right: 8px;
+    font-size: 16px;
+    color: #3b82f6; /* xanh da trời */
+    transition: 0.2s ease;
+}
+
+.custom-option.selected::before {
+    opacity: 1;
+}
+
+/* ===================== ICON CHO UPLOAD FILE ===================== */
+label.btn.btn-primary[for="productImage"] i,
+label[for="productImage"]::before {
+    content: "\f093"; /* upload icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 6px;
+    color: #3b82f6; /* xanh da trời */
+}
+/* ===================== ICON CHO NÚT CHỌN ẢNH ===================== */
+label.btn.btn-primary[for="productImage"] i {
+    color: #ffffff; /* icon upload màu trắng */
+    font-size: 16px;
+    margin-right: 6px;
+}
+
+/* ======================================================
+   ✅ STYLE NÚT CHỌN ẢNH - ĐỒNG BỘ THEO TRANG DANH MỤC
+   ====================================================== */
+
+label.btn.btn-primary[for="productImage"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #3b82f6, #60a5fa) !important;
+    border: none;
+    padding: 10px 18px;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: 0.3s ease;
+}
+
+label.btn.btn-primary[for="productImage"]:hover {
+    background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
     transform: translateY(-2px);
 }
 
-/* ✅ Table căn giữa chữ và icon */
-/* Bảng cố định kích thước cột */
-.table-category {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 14px;
-    table-layout: fixed; /* ✅ FIX QUAN TRỌNG */
+/* ✅ Xóa icon CSS thừa làm bị 2 icon */
+label[for="productImage"]::before {
+    content: none !important;
 }
 
-/* Định nghĩa width từng cột chuẩn đẹp */
-.table-category th:nth-child(1),
-.table-category td:nth-child(1) {
-    width: 80px;           /* ID */
-    text-align: left;
+/* ===================== ICON NÚT THÊM/SỬA/XÓA ===================== */
+.btn.btn-primary i.fa-plus,
+.btn-action.btn-edit i.fa-pen,
+.btn-action.btn-delete i.fa-trash,
+label.btn.btn-primary[for="productImage"] i.fa-upload {
+    font-size: 20px; /* tăng từ 16-18px lên 20px */
+    margin-right: 8px;
+    color: #ffffff; /* vẫn trắng */
 }
 
-.table-category th:nth-child(2),
-.table-category td:nth-child(2) {
-    width: 120px;          /* Ảnh */
-    text-align: center;
+/* ===================== ICON TABLE HEADER ===================== */
+thead th::before {
+    font-size: 26px; /* tăng từ 22px lên 26px */
+    margin-right: 12px;
 }
 
-.table-category th:nth-child(3),
-.table-category td:nth-child(3) {
-    width: auto;           /* Tên danh mục – tự giãn */
-    text-align: left;
+/* ===================== ICON TOOLBAR ===================== */
+.toolbar-item label::before {
+    font-size: 20px; /* tăng từ 18px lên 20px */
+    margin-right: 10px;
 }
 
-.table-category th:nth-child(4),
-.table-category td:nth-child(4) {
-    width: 180px;         /* Hành động */
-    text-align: center;
+/* ===================== ICON DROPDOWN ===================== */
+.custom-select-trigger::before {
+    font-size: 20px; /* tăng từ 18px lên 20px */
+    margin-right: 12px;
 }
 
-/* Căn giữa toàn bộ tiêu đề và dữ liệu */
-.table-category th,
-.table-category td {
-    text-align: center !important;
+/* ===================== ICON DROPDOWN OPTION (check) ===================== */
+.custom-options .custom-option::before {
+    font-size: 18px; /* tăng từ 16px lên 18px */
+    margin-right: 10px;
 }
 
-/* Bảng cố định layout tránh lệch */
-.table-category {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 14px;
-    table-layout: fixed;
+/* ===================== ICON MODAL HEADER ===================== */
+.modal-header h5::before {
+    font-size: 36px; /* tăng từ 32px lên 36px */
+    margin-right: 16px;
 }
 
-/* Cột ảnh – giữ size cố định */
-.table-category td:nth-child(2) img {
-    margin: 0 auto; /* đảm bảo ảnh vào giữa */
-}
-/* ===================== FORM CONTROL ===================== */
-.form-control {
-    height: 54px;
-    border-radius: 14px;
-    padding: 0 16px;
-    width: 100%;
-    border: 1px solid #d0d5dd;
-    font-size: 16px;
-    transition: 0.25s;
-    background: #fff;
-    appearance: none; /* bỏ style mặc định của select */
-}
 
-.form-control:hover {
-    border-color: #bcd1ff;
-}
-
-.form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.18);
-    outline: none;
-}
-
-/* Thêm icon mũi tên cho select */
-select.form-control {
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D'14'%20height%3D'8'%20viewBox%3D'0%200%2014%208'%20fill%3D'none'%20xmlns%3D'http://www.w3.org/2000/svg'%3E%3Cpath%20d%3D'M1%201L7%207L13%201'%20stroke%3D'%23333'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-size: 14px 8px;
-    cursor: pointer;
-}
-
-/* margin cho mỗi field trong modal */
-.modal-body .mb-3 {
-    margin-bottom: 20px;
-}
-
-/* label form */
-.modal-body .form-label {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 6px;
-}
-
-/* ===================== IMAGE UPLOAD ===================== */
-.image-upload label {
+/* ===================== ICON DROPDOWN OPTION: HIỂN THỊ LUÔN ===================== */
+.custom-options .custom-option::before {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-right: 8px;
+    font-size: 16px; /* tăng size cho rõ */
     display: inline-block;
-    padding: 12px 18px;
-    background: linear-gradient(135deg, #007bff, #3393ff);
-    color: #fff;
-    border-radius: 14px;
-    cursor: pointer;
-    font-size: 15px;
+    vertical-align: middle;
+    color: #3b82f6;
+    opacity: 1; /* luôn hiển thị */
+    transition: 0.2s ease;
+}
+
+/* Icon riêng cho từng option theo thứ tự */
+.custom-options .custom-option:nth-child(1)::before {
+    content: "\f017"; /* clock icon cho "Mới nhất" */
+}
+
+.custom-options .custom-option:nth-child(2)::before {
+    content: "\f017"; /* clock-rotate-left cho "Cũ nhất" */
+}
+
+.custom-options .custom-option:nth-child(3)::before {
+    content: "\f0de"; /* arrow-up-wide-short cho "Tên A→Z" */
+}
+
+.custom-options .custom-option:nth-child(4)::before {
+    content: "\f0dd"; /* arrow-down-wide-short cho "Tên Z→A" */
+}
+
+/* Hover option */
+.custom-options .custom-option:hover {
+    color: #1e40af;
     font-weight: 600;
-    transition: 0.25s;
-    border: none;
 }
-
-.image-upload label:hover {
-    opacity: 0.9;
-}
-
-.image-upload input {
-    display: none;
-}
-
-.preview-container {
-    margin-top: 14px;
-}
-
-.preview-img {
-    width: 150px;
-    height: 150px;
-    border-radius: 16px;
-    object-fit: cover;
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
 
 </style>

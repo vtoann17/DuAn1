@@ -2,9 +2,7 @@
 import { ref, computed, reactive } from 'vue';
 import { useCategories } from '~/store/categories';
 import { onMounted } from 'vue';
-
 definePageMeta({ layout: "admin" });
-
 const storeCategories = useCategories()
 const loading = ref(false);
 const showModal = ref(false);
