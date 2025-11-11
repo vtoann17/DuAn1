@@ -8,6 +8,8 @@ import {
   LayoutDashboard,
   Settings
 } from "lucide-vue-next";
+
+
 </script>
 
 <template>
@@ -22,12 +24,24 @@ import {
     </div>
 
     <nav class="menu">
-      <a class="menu-item active"><LayoutDashboard class="icon" /> Bảng điều khiển</a>
-      <a class="menu-item"><Package class="icon" /> Quản lý sản phẩm</a>
-      <a class="menu-item"><Tags class="icon" /> Quản lý danh mục</a>
-      <a class="menu-item"><ShoppingBag class="icon" /> Quản lý đơn hàng</a>
-      <a class="menu-item"><Users class="icon" /> Quản lý người dùng</a>
-      <a class="menu-item"><Settings class="icon" /> Cài đặt hệ thống</a>
+      <NuxtLink to="/admin" class="menu-item active">
+        <LayoutDashboard class="icon" /> Bảng điều khiển
+      </NuxtLink>
+      <NuxtLink to="/admin/categories" class="menu-item">
+        <Tags class="icon" /> Quản lý danh mục
+      </NuxtLink>
+      <a class="menu-item">
+        <Package class="icon" /> Quản lý sản phẩm
+      </a>
+      <a class="menu-item">
+        <ShoppingBag class="icon" /> Quản lý đơn hàng
+      </a>
+      <a class="menu-item">
+        <Users class="icon" /> Quản lý người dùng
+      </a>
+      <a class="menu-item">
+        <Settings class="icon" /> Cài đặt hệ thống
+      </a>
     </nav>
   </aside>
 </template>
