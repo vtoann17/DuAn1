@@ -2,5 +2,15 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/image', '@nuxt/ui']
+  modules: ['@nuxt/image', '@nuxt/ui', '@pinia/nuxt'],
+  css: [
+    'bootstrap/dist/css/bootstrap.min.css',
+    'bootstrap-icons/font/bootstrap-icons.css',
+  ],
+  runtimeConfig: {
+    apiSecret: '', // => process.env.NUXT_API_SECRET
+    public: {
+      apiBase: '', // => process.env.NUXT_PUBLIC_API_BASE
+    },
+  },
 })
