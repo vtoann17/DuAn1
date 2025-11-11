@@ -329,7 +329,7 @@ onMounted(async () => {
     width: 100%;
 }
 
-/* ===================== PAGE WRAPPER ===================== */
+
 .container {
     animation: fadeUp 0.6s ease forwards;
     background: linear-gradient(145deg, #e8f0ff, #fdfdff);

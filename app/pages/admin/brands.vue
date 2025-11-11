@@ -1,16 +1,18 @@
 <script setup>
 import { ref, computed, reactive } from 'vue';
-import { useCategories } from '~/store/categories';
+import { useBrands } from '~/store/brands';
 import { onMounted } from 'vue';
+
 definePageMeta({ layout: "admin" });
-const storeCategories = useCategories()
+
+const storeBrands = useBrands()
 const loading = ref(false);
 const showModal = ref(false);
 const isEditing = ref(false);
 
-const categories = computed(() => storeCategories.categories);
-const totalCategories = computed(() => storeCategories.totalCategories);
-const totalPages = computed(() => storeCategories.totalPages);
+const brands = computed(() => storeBrands.brands);
+const totalBrands = computed(() => storeBrands.totalBrands);
+const totalPages = computed(() => storeBrands.totalPages);
 
 const query = reactive({
     search: '',
@@ -57,13 +59,13 @@ const openAddModal = () => {
     document.body.classList.add("modal-open");
 };
 
-const openEditModal = (category) => {
+const openEditModal = (brand) => {
     isEditing.value = true;
     form.value = {
-        id: category.id,
-        name: category.name,
+        id: brand.id,
+        name: brand.name,
         image: null,
-        preview: category.img
+        preview: brand.img
     };
     showModal.value = true;
     document.body.classList.add("modal-open");
@@ -79,10 +81,65 @@ const resetForm = () => {
     form.value = { id: null, name: "", image: null, preview: null };
 };
 
+const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    form.value.image = file;
+    if (file) form.value.preview = URL.createObjectURL(file);
+};
+//save Brands
+const saveBrands = async () => {
+    loading.value = true;
+    const formData = new FormData();
+
+    if (form.value.image) {
+        formData.append('img', form.value.image);
+    }
+    formData.append('name', form.value.name);
+
+    try {
+        if (form.value.id) {
+            await storeBrands.updateBrands(formData, form.value.id);
+        } else {
+            await storeBrands.createBrands(formData);
+        }
+        await onChange();
+        closeModal();
+    } catch (error) {
+        console.error(error);
+    } finally {
+        loading.value = false;
+    }
+};
+// Delete Brand
+const deleteBrands = async (id) => {
+    try {
+        await storeBrands.deleteBrands(id);
+        await onChange();
+    } catch (error) {
+        console.error(error);
+    }
+};
+// Search / pagination
+const search = async () => {
+    query.page = 1
+    await onChange();
+}
+const changePage = async (page) => {
+    query.page = page
+    await onChange();
+}
+const onChange = async () => {
+    await storeBrands.loadBrands(query)
+}
+
+onMounted(async () => {
+    await onChange()
+})
 
 </script>
 
 <template>
+
     <div class="container py-4">
 
         <h1 class="mb-4 fw-bold">Quản lý thương hiệu</h1>
@@ -159,16 +216,16 @@ const resetForm = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(cat, index) in categories" :key="cat.id" class="shadow-sm rounded-3 hover-lift">
+                    <tr v-for="(br, index) in brands" :key="br.id" class="shadow-sm rounded-3 hover-lift">
                         <td>{{ (query.page - 1) * query.perPage + index + 1 }}</td>
-                        <td><img :src="cat.img" class="rounded-3 cat-img"></td>
-                        <td class="text-center">{{ cat.name }}</td>
+                        <td><img :src="br.img" class="rounded-3 cat-img"></td>
+                        <td class="text-center">{{ br.name }}</td>
 
                         <td>
-                            <button class="btn-action btn-edit" @click="openEditModal(cat)">
+                            <button class="btn-action btn-edit" @click="openEditModal(br)">
                                 <i class="fa-solid fa-pen"></i> Sửa
                             </button>
-                            <button class="btn-action btn-delete" @click="deleteCategory(cat.id)">
+                            <button class="btn-action btn-delete" @click="deleteBrands(br.id)">
                                 <i class="fa-solid fa-trash"></i> Xóa
                             </button>
                         </td>
@@ -194,7 +251,7 @@ const resetForm = () => {
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title fw-bold">{{ isEditing ? 'Chỉnh sửa danh mục' : 'Thêm danh thương hiệu' }}
+                        <h5 class="modal-title fw-bold">{{ isEditing ? 'Chỉnh sửa thương hiệu' : 'Thêm thương hiệu' }}
                         </h5>
                         <button type="button" class="btn-close btn-close-white" @click="closeModal"></button>
                     </div>
@@ -223,7 +280,7 @@ const resetForm = () => {
 
                     <div class="modal-footer">
                         <button class="btn btn-secondary" @click="closeModal" :disabled="loading">Hủy</button>
-                        <button class="btn btn-primary" @click="saveCategory" :disabled="loading">
+                        <button class="btn btn-primary" @click="saveBrands" :disabled="loading">
                             <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
                             <i v-else class="fa-solid fa-save me-2"></i>
                             {{ isEditing ? 'Cập nhật' : 'Thêm mới' }}
@@ -293,11 +350,12 @@ h1 {
 }
 
 h1::before {
-    content: "\f02e";
+    content: "\f02c"; /* brand / stamp icon */
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
-    font-size: 28px;
-    color: #3b82f6;
+    font-size: 50px;
+    color: #2563eb;
+    margin-right: 14px;
 }
 
 /* ===================== BUTTON: ADD ===================== */

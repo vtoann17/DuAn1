@@ -80,7 +80,6 @@ const changePage = (page) => query.page = page;
     <button class="btn btn-primary" @click="openAddModal"><i class="fa-solid fa-plus me-2"></i> Thêm sản phẩm</button>
   </div>
 
-  <!-- Toolbar -->
   <div class="toolbar d-flex align-items-center justify-content-between flex-wrap gap-3">
     <div class="d-flex align-items-center gap-4 flex-wrap">
       <div class="toolbar-item d-flex align-items-center gap-2">
@@ -119,8 +118,6 @@ const changePage = (page) => query.page = page;
       <input type="text" v-model="query.search" placeholder="Tìm kiếm sản phẩm...">
     </div>
   </div>
-
-  <!-- Table -->
   <div class="table-responsive bg-white shadow-sm rounded-4 p-3 mt-3">
     <table class="table table-borderless align-middle text-center mb-0">
       <thead class="table-light">
