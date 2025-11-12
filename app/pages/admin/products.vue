@@ -3,7 +3,9 @@ import { ref, reactive, computed } from 'vue';
 
 definePageMeta({ layout: "admin" });
 
-// ===== DATA MOCK =====
+/* ================================================
+   🧩 MOCK DATA
+================================================ */
 const products = ref([
   { id: 1, name: "iPhone 15", img: "https://via.placeholder.com/80", idCategory: 1, idBrand: 1 },
   { id: 2, name: "Galaxy S23", img: "https://via.placeholder.com/80", idCategory: 1, idBrand: 2 },
@@ -24,54 +26,163 @@ const brands = [
   { id: 3, name: "Lenovo" }
 ];
 
-// ===== STATE =====
-const query = reactive({ search: '', perPage: 5, sort: 'descID', page: 1 });
-const dropdownOpen = reactive({ perPage: false, sort: false });
-const sortLabels = { 'descID': 'Mới nhất', 'ascID': 'Cũ nhất', 'ascName': 'Tên A → Z', 'descName': 'Tên Z → A' };
+/* ================================================
+   ⚙️ STATE
+================================================ */
+const query = reactive({
+  search: '',
+  perPage: 5,
+  sort: 'descID',
+  page: 1
+});
+
+const dropdownOpen = reactive({
+  perPage: false,
+  sort: false
+});
+
+const sortLabels = {
+  descID: 'Mới nhất',
+  ascID: 'Cũ nhất',
+  ascName: 'Tên A → Z',
+  descName: 'Tên Z → A'
+};
+
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
 
-const form = ref({ id: null, name: '', img: null, preview: null, idCategory: null, idBrand: null });
+const form = ref({
+  id: null,
+  name: '',
+  img: null,
+  preview: null,
+  idCategory: null,
+  idBrand: null
+});
 
-// ===== FUNCTIONS =====
+/* ================================================
+   🧠 METHODS
+================================================ */
 const getSortLabel = (value) => sortLabels[value] || "Mới nhất";
 
-const toggleDropdown = (type) => dropdownOpen[type] = !dropdownOpen[type];
-const closeDropdown = (type) => setTimeout(() => dropdownOpen[type] = false, 200);
-const selectOption = (type, value) => { query[type] = value; dropdownOpen[type] = false; };
+const toggleDropdown = (type) => {
+  dropdownOpen[type] = !dropdownOpen[type];
+};
 
-const openAddModal = () => { isEditing.value = false; resetForm(); showModal.value = true; document.body.classList.add("modal-open"); };
-const openEditModal = (product) => { isEditing.value = true; form.value = { ...product, img: null, preview: product.img }; showModal.value = true; document.body.classList.add("modal-open"); };
-const closeModal = () => { showModal.value = false; resetForm(); document.body.classList.remove("modal-open"); };
-const resetForm = () => { form.value = { id: null, name: '', img: null, preview: null, idCategory: null, idBrand: null }; };
+const closeDropdown = (type) => {
+  setTimeout(() => dropdownOpen[type] = false, 200);
+};
 
-const handleFileUpload = (e) => { const file = e.target.files[0]; form.value.img = file; if(file) form.value.preview = URL.createObjectURL(file); };
+const selectOption = async (type, value) => {
+  query[type] = value;
+  if (type === 'perPage' || type === 'sort') query.page = 1;
+  dropdownOpen[type] = false;
+  await onChange?.(); // giữ lại nếu bạn có hàm onChange trong code chính
+};
 
+/* ---------- Modal actions ---------- */
+const openAddModal = () => {
+  isEditing.value = false;
+  resetForm();
+  showModal.value = true;
+  document.body.classList.add("modal-open");
+};
+
+const openEditModal = (product) => {
+  isEditing.value = true;
+  form.value = {
+    ...product,
+    img: null,
+    preview: product.img
+  };
+  showModal.value = true;
+  document.body.classList.add("modal-open");
+};
+
+const closeModal = () => {
+  showModal.value = false;
+  resetForm();
+  document.body.classList.remove("modal-open");
+};
+
+const resetForm = () => {
+  form.value = {
+    id: null,
+    name: '',
+    img: null,
+    preview: null,
+    idCategory: null,
+    idBrand: null
+  };
+};
+
+/* ---------- File upload ---------- */
+const handleFileUpload = (e) => {
+  const file = e.target.files[0];
+  form.value.img = file;
+  if (file) form.value.preview = URL.createObjectURL(file);
+};
+
+/* ---------- CRUD ---------- */
 const saveProduct = () => {
-  if(isEditing.value){
+  if (isEditing.value) {
     const idx = products.value.findIndex(p => p.id === form.value.id);
-    products.value[idx] = { id: form.value.id, name: form.value.name, img: form.value.preview, idCategory: form.value.idCategory, idBrand: form.value.idBrand };
+    products.value[idx] = {
+      id: form.value.id,
+      name: form.value.name,
+      img: form.value.preview,
+      idCategory: form.value.idCategory,
+      idBrand: form.value.idBrand
+    };
   } else {
-    products.value.push({ id: products.value.length + 1, name: form.value.name, img: form.value.preview || 'https://via.placeholder.com/80', idCategory: form.value.idCategory, idBrand: form.value.idBrand });
+    products.value.push({
+      id: products.value.length + 1,
+      name: form.value.name,
+      img: form.value.preview || 'https://via.placeholder.com/80',
+      idCategory: form.value.idCategory,
+      idBrand: form.value.idBrand
+    });
   }
   closeModal();
 };
 
-const deleteProduct = (id) => { products.value = products.value.filter(p => p.id !== id); };
+const deleteProduct = (id) => {
+  products.value = products.value.filter(p => p.id !== id);
+};
 
-// ===== COMPUTED =====
+/* ================================================
+   📊 COMPUTED
+================================================ */
 const filteredProducts = computed(() => {
-  let list = products.value.filter(p => p.name.toLowerCase().includes(query.search.toLowerCase()));
-  if(query.sort==='ascID') list.sort((a,b)=>a.id-b.id);
-  if(query.sort==='descID') list.sort((a,b)=>b.id-a.id);
-  if(query.sort==='ascName') list.sort((a,b)=>a.name.localeCompare(b.name));
-  if(query.sort==='descName') list.sort((a,b)=>b.name.localeCompare(a.name));
-  return list.slice((query.page-1)*query.perPage, query.page*query.perPage);
+  let list = products.value.filter(p =>
+    p.name.toLowerCase().includes(query.search.toLowerCase())
+  );
+
+  // Sắp xếp
+  if (query.sort === 'ascID') list.sort((a, b) => a.id - b.id);
+  if (query.sort === 'descID') list.sort((a, b) => b.id - a.id);
+  if (query.sort === 'ascName') list.sort((a, b) => a.name.localeCompare(b.name));
+  if (query.sort === 'descName') list.sort((a, b) => b.name.localeCompare(a.name));
+
+  // Phân trang
+  return list.slice((query.page - 1) * query.perPage, query.page * query.perPage);
 });
-const totalPages = computed(()=>Math.ceil(products.value.filter(p=>p.name.toLowerCase().includes(query.search.toLowerCase())).length/query.perPage));
-const changePage = (page) => query.page = page;
+
+const totalPages = computed(() =>
+  Math.ceil(
+    products.value.filter(p =>
+      p.name.toLowerCase().includes(query.search.toLowerCase())
+    ).length / query.perPage
+  )
+);
+
+const changePage = (page) => {
+  query.page = page;
+};
 </script>
+
+
 
 <template>
 <div class="container py-4">
@@ -559,13 +670,21 @@ thead th:nth-child(6)::before { content: "\f085"; color: #ef4444; }
 
 /* ===================== ICON PAGE TITLE ===================== */
 h1::before {
-    content: "\f07a"; /* icon hộp sản phẩm */
+    content: "\f466"; /* box icon */
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
     font-size: 48px;
     color: #3b82f6; /* xanh da trời */
     margin-right: 14px;
+    vertical-align: middle;
+    transition: transform 0.3s ease, color 0.3s ease;
 }
+
+h1:hover::before {
+    transform: scale(1.1) rotate(-5deg);
+    color: #2563eb;
+}
+
 
 /* ===================== ICON TABLE HEADER ===================== */
 thead th::before {
