@@ -42,7 +42,7 @@ import {
       </NuxtLink>
       <a class="menu-item">
         <Users class="icon" /> Quản lý người dùng
-      </a>
+      </NuxtLink>
       <a class="menu-item">
         <Settings class="icon" /> Cài đặt hệ thống
       </a>
