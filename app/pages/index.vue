@@ -1,5 +1,5 @@
 <script setup>
-import Appslidebar from '~/components/AppSlidebar.vue';
+import Appslidebar from '/components/AppSlidebar.vue';
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const currentSlide = ref(0)
