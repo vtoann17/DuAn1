@@ -145,10 +145,10 @@ const onChange = async () => {
     await storeCategories.loadCategories(query);
 };
 
-const resetPage = async () => {
-    query.page = 1;
-    await onChange();
-}
+// const resetPage = async () => {
+//     query.page = 1;
+//     await onChange();
+// }
 onMounted(async () => {
     await onChange();
 });
@@ -671,13 +671,21 @@ td {
 }
 /* ===================== ICON CHO PAGE TITLE ===================== */
 h1::before {
-    content: "\f02e"; /* list icon */
+    content: "\f02b"; /* tag icon */
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
-    font-size: 50px;  /* tăng size */
+    font-size: 48px;
     color: #2563eb;
     margin-right: 14px;
+    vertical-align: middle;
+    transition: transform 0.3s ease, color 0.3s ease;
 }
+
+h1:hover::before {
+    transform: scale(1.1) rotate(-5deg);
+    color: #1d4ed8;
+}
+
 
 /* ===================== ICON CHO TABLE HEADER ===================== */
 thead th::before {

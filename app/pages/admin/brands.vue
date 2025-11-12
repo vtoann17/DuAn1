@@ -40,6 +40,9 @@ const closeDropdown = (type) => setTimeout(() => dropdownOpen[type] = false, 200
 
 const selectOption = async (type, value) => {
     query[type] = value;
+    if (type === 'perPage' || type === 'sort') {
+        query.page = 1;
+    }
     dropdownOpen[type] = false;
     await onChange();
 };
@@ -121,9 +124,9 @@ const deleteBrands = async (id) => {
 };
 // Search / pagination
 const search = async () => {
-    query.page = 1
+    query.page = 1;
     await onChange();
-}
+};
 const changePage = async (page) => {
     query.page = page
     await onChange();
@@ -664,14 +667,16 @@ td {
 
 /* ===================== ICON CHO PAGE TITLE ===================== */
 h1::before {
-    content: "\f02e";
-    /* list icon */
+    content: "\f559"; /* award icon */
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
-    font-size: 50px;
-    /* tăng size */
+    font-size: 48px;
     color: #2563eb;
     margin-right: 14px;
+}
+h1:hover::before {
+    transform: scale(1.1) rotate(-5deg);
+    color: #1d4ed8;
 }
 
 /* ===================== ICON CHO TABLE HEADER ===================== */
