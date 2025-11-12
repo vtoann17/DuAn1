@@ -3,7 +3,6 @@ import {
   User,
   Package,
   Tags,
-  ShoppingBag,
   Users,
   LayoutDashboard,
   Settings,
@@ -34,13 +33,13 @@ import {
       <NuxtLink to="/admin/brands" class="menu-item">
         <Award  class="icon" /> Quản lý thương hiệu
       </NuxtLink>
-      <a class="menu-item">
+      <NuxtLink to="/admin/products" class="menu-item">
         <Package class="icon" /> Quản lý sản phẩm
-      </a>
+      </NuxtLink>
       <NuxtLink to="/admin/orders" class="menu-item">
         <Award  class="icon" /> Quản lý đơn hàng
       </NuxtLink>
-      <a class="menu-item">
+      <NuxtLink to="/admin/users" class="menu-item">
         <Users class="icon" /> Quản lý người dùng
       </NuxtLink>
       <a class="menu-item">
