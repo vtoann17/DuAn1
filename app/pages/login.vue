@@ -1,3 +1,28 @@
+<script setup>
+import { ref } from "vue";
+import { useLogin } from "~/store/login";
+
+const useAuth = useLogin();
+const register = ref({
+    name: "",
+    email: "",
+    password: ""
+});
+const login = ref({
+    email: "",
+    password: ""
+});
+
+
+const handleLogin = () => {
+     useAuth.login(login.value);
+};
+
+const handleSignup = () => {
+   useAuth.register(register.value);
+};
+</script>
+
 <template>
     <div class="auth-page">
         <div class="auth-container">
@@ -9,8 +34,8 @@
                 </div>
 
                 <div class="auth-form">
-                    <input type="email" placeholder="Email" v-model="loginEmail" class="auth-input" />
-                    <input type="password" placeholder="Mật khẩu" v-model="loginPassword" class="auth-input" />
+                    <input type="email" placeholder="Email" v-model="login.email" class="auth-input" />
+                    <input type="password" placeholder="Mật khẩu" v-model="login.password" class="auth-input" />
                     <button class="btn-primary" @click="handleLogin">Đăng Nhập</button>
 
                     <p class="terms-text">
@@ -29,9 +54,9 @@
                 </div>
 
                 <div class="auth-form">
-                    <input type="text" placeholder="Họ và tên" v-model="signupName" class="auth-input" />
-                    <input type="email" placeholder="Email" v-model="signupEmail" class="auth-input" />
-                    <input type="password" placeholder="Mật khẩu" v-model="signupPassword" class="auth-input" />
+                    <input type="text" placeholder="Họ và tên" v-model="register.name" class="auth-input" />
+                    <input type="email" placeholder="Email" v-model="register.email" class="auth-input" />
+                    <input type="password" placeholder="Mật khẩu" v-model="register.password" class="auth-input" />
 
                     <button class="btn-primary" @click="handleSignup">Đăng Ký</button>
 
@@ -69,23 +94,7 @@
     </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
 
-const loginEmail = ref("");
-const loginPassword = ref("");
-const signupName = ref("");
-const signupEmail = ref("");
-const signupPassword = ref("");
-
-const handleLogin = () => {
-    alert(`Đăng nhập với: ${loginEmail.value}`);
-};
-
-const handleSignup = () => {
-    alert(`Đăng ký với: ${signupName.value}`);
-};
-</script>
 
 <style scoped>
 

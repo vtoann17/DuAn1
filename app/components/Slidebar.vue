@@ -34,13 +34,12 @@ import {
       <NuxtLink to="/admin/brands" class="menu-item">
         <Award  class="icon" /> Quản lý thương hiệu
       </NuxtLink>
-      
-      <NuxtLink to="/admin/products" class="menu-item">
-        <Package class="icon" /> Quản lý sản phẩm
-      </NuxtLink>
       <a class="menu-item">
-        <ShoppingBag class="icon" /> Quản lý đơn hàng
+        <Package class="icon" /> Quản lý sản phẩm
       </a>
+      <NuxtLink to="/admin/orders" class="menu-item">
+        <Award  class="icon" /> Quản lý đơn hàng
+      </NuxtLink>
       <a class="menu-item">
         <Users class="icon" /> Quản lý người dùng
       </a>
