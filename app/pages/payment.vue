@@ -1,6 +1,21 @@
 <script setup>
 import { ref } from 'vue'
-import { Truck, CreditCard, Info, ChevronRight } from 'lucide-vue-next'
+// Đã xóa import Lucide Vue Next
+
+// Thay thế các biến icon bằng tên class Bootstrap Icons
+const iconMap = {
+    Truck: 'bi-truck',
+    CreditCard: 'bi-credit-card',
+    Info: 'bi-info-circle',
+    ChevronRight: 'bi-chevron-right',
+    Promo: 'bi-ticket-detailed',
+    Warning: 'bi-exclamation-triangle',
+    Phone: 'bi-phone',
+    Cash: 'bi-cash',
+    Momo: 'bi-circle-fill', // Tùy chọn icon cho Momo
+    Zalopay: 'bi-circle-fill', // Tùy chọn icon cho ZaloPay
+    Product: 'bi-phone-fill' // Icon cho sản phẩm
+}
 
 const deliveryMethod = ref('economical')
 const paymentMethod = ref('cash')
@@ -8,7 +23,7 @@ const paymentMethod = ref('cash')
 const orderData = {
     product: {
         name: 'Điện thoại Samsung Galaxy A06 5G (4/128GB), Màn hình 6.7", Pin 5000mAh',
-        image: '📱',
+        image: iconMap.Product, // Đã thay thế emoji
         quantity: 1,
         originalPrice: 3920000,
         price: 2750000
@@ -34,10 +49,10 @@ const orderData = {
 }
 
 const paymentOptions = [
-    { id: 'cash', name: 'Thanh toán tiền mặt khi nhận hàng', icon: '💵' },
-    { id: 'momo', name: 'Ví Momo', icon: '🟣' },
-    { id: 'zalopay', name: 'ZaloPay', icon: '🔵' },
-    { id: 'card', name: 'Thẻ tín dụng / Ghi nợ', icon: '💳' }
+    { id: 'cash', name: 'Thanh toán tiền mặt khi nhận hàng', icon: iconMap.Cash }, // Đã thay thế emoji
+    { id: 'momo', name: 'Ví Momo', icon: iconMap.Momo }, // Đã thay thế emoji
+    { id: 'zalopay', name: 'ZaloPay', icon: iconMap.Zalopay }, // Đã thay thế emoji
+    { id: 'card', name: 'Thẻ tín dụng / Ghi nợ', icon: iconMap.CreditCard } // Đã thay thế emoji/Lucide
 ]
 
 // Promotions state
@@ -70,20 +85,15 @@ function removeAppliedPromo() {
 
 <template>
     <div class="payment-container">
-        <!-- LEFT COLUMN -->
         <div class="left">
-            <!-- DELIVERY -->
-            <!-- DELIVERY -->
             <div class="section">
                 <h2>Chọn hình thức giao hàng</h2>
 
-                <!-- Giao hàng + sản phẩm -->
                 <label class="radio-box" tabindex="0">
                     <input type="radio" v-model="deliveryMethod" value="economical" />
                     <div class="radio-content">
-                        <!-- Sản phẩm -->
                         <div class="product-preview">
-                            <div class="product-img">{{ orderData.product.image }}</div>
+                            <div class="product-img"><i :class="['bi', orderData.product.image]"></i></div>
                             <div class="product-info">
                                 <div class="product-name">{{ orderData.product.name }}</div>
                                 <div class="product-price">
@@ -94,11 +104,10 @@ function removeAppliedPromo() {
                             </div>
                         </div>
 
-                        <!-- Thông tin giao hàng -->
                         <div class="delivery-info">
                             <div class="radio-title">Giao tiết kiệm</div>
                             <div class="radio-sub">
-                                <Truck class="icon" />
+                                <i :class="['bi', iconMap.Truck]" class="icon"></i>
                                 <span>{{ orderData.shipping.date }}</span>
                             </div>
                             <div class="price-line">
@@ -106,23 +115,22 @@ function removeAppliedPromo() {
                                 <span class="free">MIỄN PHÍ</span>
                             </div>
                             <div class="info-line">
-                                <Info class="icon-small" />
+                                <i :class="['bi', iconMap.Info]" class="icon-small"></i>
                                 <span>Được giao bởi {{ orderData.shipping.method }} (từ {{ orderData.shipping.from
-                                    }})</span>
+                                }})</span>
                             </div>
                         </div>
                     </div>
                 </label>
 
                 <button class="promo-shop-btn" title="Thêm mã khuyến mãi của Shop">
-                    🎫 Thêm mã khuyến mãi của Shop
-                    <ChevronRight class="chev" />
+                    <i :class="['bi', iconMap.Promo]" class="promo-btn-icon"></i> Thêm mã khuyến mãi của Shop
+                    <i :class="['bi', iconMap.ChevronRight]" class="chev"></i>
                 </button>
             </div>
 
 
 
-            <!-- PAYMENT -->
             <div class="section">
                 <h2>Chọn hình thức thanh toán</h2>
 
@@ -130,7 +138,7 @@ function removeAppliedPromo() {
                     <input type="radio" v-model="paymentMethod" :value="option.id" />
                     <div class="radio-content-row">
                         <div class="left-inline">
-                            <span class="emoji">{{ option.icon }}</span>
+                            <i :class="['bi', option.icon]" class="emoji"></i>
                             <div>
                                 <div class="opt-name">{{ option.name }}</div>
                             </div>
@@ -143,7 +151,7 @@ function removeAppliedPromo() {
 
                 <div v-if="paymentMethod === 'card'" class="card-section">
                     <div class="card-offer">
-                        <CreditCard class="icon-small" />
+                        <i :class="['bi', iconMap.CreditCard]" class="icon-small"></i>
                         <div>
                             <div class="small-bold">Ưu đãi thanh toán thẻ</div>
                             <div class="small-muted">Xem các ưu đãi khi thanh toán bằng thẻ</div>
@@ -153,9 +161,7 @@ function removeAppliedPromo() {
             </div>
         </div>
 
-        <!-- RIGHT COLUMN -->
         <div class="right">
-            <!-- CUSTOMER -->
             <div class="section">
                 <div class="header-line">
                     <h3>Giao tới</h3>
@@ -166,17 +172,15 @@ function removeAppliedPromo() {
                 <div class="note">Lưu ý: Sử dụng địa chỉ nhận hàng trước sáp nhập</div>
             </div>
 
-            <!-- PROMOTIONS (mã giảm giá) -->
             <div class="section">
                 <div class="promo-header">
                     <span class="bold">Tiki Khuyến Mãi</span>
-                    <span class="muted">Có thể chọn 2 🛈</span>
+                    <span class="muted">Có thể chọn 2 <i :class="['bi', iconMap.Info]" class="info-mini"></i></span>
                 </div>
 
-                <!-- Selected / active promo -->
                 <div v-if="appliedPromo" class="selected-promo">
                     <div class="promo-left">
-                        <Truck class="promo-icon" />
+                        <i :class="['bi', iconMap.Truck]" class="promo-icon"></i>
                         <div>
                             <div class="promo-title">{{ appliedPromo.title }}</div>
                             <div class="promo-desc">{{ appliedPromo.desc }}</div>
@@ -187,13 +191,11 @@ function removeAppliedPromo() {
                     </div>
                 </div>
 
-                <!-- Input to add promo -->
                 <div class="promo-input-row">
                     <input v-model="promoInput" placeholder="Nhập mã khuyến mãi" />
                     <button class="apply-btn" @click="applyPromoCode">Áp dụng</button>
                 </div>
 
-                <!-- Quick pick available promos -->
                 <div class="promo-list">
                     <div v-for="p in availablePromos" :key="p.id" class="promo-item">
                         <div>
@@ -208,22 +210,21 @@ function removeAppliedPromo() {
 
                 <button class="full-btn" title="Chọn hoặc nhập mã khác">
                     Chọn hoặc nhập mã khác
-                    <ChevronRight class="chev" />
+                    <i :class="['bi', iconMap.ChevronRight]" class="chev"></i>
                 </button>
             </div>
 
-            <!-- DISCOUNT INFO -->
             <div class="section small-info">
                 <div class="muted">Thứ ngày: Giảm giá cho đơn hàng bằng ASA</div>
                 <div class="warn-row">
-                    <span class="warn">⚠️</span>
+                    <span class="warn"><i :class="['bi', iconMap.Warning]"></i></span>
                     <div>
                         <div class="small-bold">Chưa áp dụng giảm giá</div>
                         <div class="small-muted">Vì chưa đạt đủ số lượng ASA</div>
                     </div>
                 </div>
                 <div class="warn-row">
-                    <span class="warn">⚠️</span>
+                    <span class="warn"><i :class="['bi', iconMap.Warning]"></i></span>
                     <div>
                         <div class="small-bold">Chưa áp dụng giảm giá</div>
                         <div class="small-muted">Vì số hữu chưa đủ tối thiểu 1000 Xu</div>
@@ -231,7 +232,6 @@ function removeAppliedPromo() {
                 </div>
             </div>
 
-            <!-- ORDER SUMMARY -->
             <div class="section">
                 <div class="summary-head">
                     <h3>Đơn hàng</h3>
@@ -253,7 +253,7 @@ function removeAppliedPromo() {
                 </div>
                 <div class="summary-row green">
                     <span class="flex-center">Giảm giá vận chuyển
-                        <Info class="info-mini" />
+                        <i :class="['bi', iconMap.Info]" class="info-mini"></i>
                     </span>
                     <span>{{ orderData.discount.shipping.toLocaleString() }}₫</span>
                 </div>
@@ -408,16 +408,38 @@ function removeAppliedPromo() {
     color: #059669;
 }
 
+/* Thêm style cho icon Bootstrap */
+.icon.bi {
+    width: auto;
+    height: auto;
+    font-size: 18px;
+}
+
+
 .icon-small {
     width: 14px;
     height: 14px;
     color: #6b7280;
 }
 
+/* Thêm style cho icon Bootstrap */
+.icon-small.bi {
+    width: auto;
+    height: auto;
+    font-size: 14px;
+}
+
 .promo-icon {
     width: 28px;
     height: 28px;
     color: #059669;
+}
+
+/* Thêm style cho icon Bootstrap */
+.promo-icon.bi {
+    width: auto;
+    height: auto;
+    font-size: 28px;
 }
 
 /* Buttons */
@@ -433,15 +455,44 @@ function removeAppliedPromo() {
     cursor: pointer;
 }
 
+.promo-btn-icon.bi {
+    font-size: 16px;
+    color: #2563eb;
+}
+
 .chev {
     width: 14px;
     height: 14px;
     color: #2563eb;
 }
 
+/* Thêm style cho icon Bootstrap */
+.chev.bi {
+    width: auto;
+    height: auto;
+    font-size: 14px;
+}
+
 /* Payment options */
 .emoji {
     font-size: 18px
+}
+
+/* Thêm style cho icon Bootstrap */
+.emoji.bi {
+    font-size: 18px;
+    /* Điều chỉnh màu cho Momo/Zalopay */
+    color: initial;
+}
+
+.emoji.bi-circle-fill:nth-child(1) {
+    color: #ae00ff;
+    /* Momo color */
+}
+
+.emoji.bi-circle-fill:nth-child(2) {
+    color: #0087ff;
+    /* Zalopay color */
 }
 
 /* Card offer */
@@ -493,6 +544,14 @@ function removeAppliedPromo() {
     color: #6b7280;
     font-size: 13px;
 }
+
+/* Info icon trong promo header */
+.muted .info-mini.bi {
+    font-size: 14px;
+    margin-left: 4px;
+    color: #6b7280;
+}
+
 
 .selected-promo {
     display: flex;
@@ -610,6 +669,12 @@ function removeAppliedPromo() {
     color: #f59e0b;
 }
 
+/* Thay thế emoji ⚠️ bằng icon Bootstrap */
+.warn .bi {
+    font-size: 16px;
+    color: #f59e0b;
+}
+
 .small-bold {
     font-weight: 600;
 }
@@ -657,6 +722,14 @@ function removeAppliedPromo() {
     height: 14px;
     color: #6b7280;
     margin-left: 6px;
+}
+
+/* Thêm style cho icon Bootstrap */
+.info-mini.bi {
+    width: auto;
+    height: auto;
+    font-size: 14px;
+    color: #6b7280;
 }
 
 .summary-total {
