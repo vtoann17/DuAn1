@@ -23,36 +23,31 @@
 
       <!-- Right Buttons -->
       <div class="right-nav">
-        <a href="#"><span class="icon"></span> Trang chủ</a>
         <a href="#"><span class="icon"></span> Tài khoản</a>
         <a href="#" class="cart">
-          🛒
+          <i class="icon bi bi-cart4"></i>
           <span class="cart-count">0</span>
         </a>
       </div>
     </div>
 
-    <!-- Category & Delivery in one row -->
     <div class="category-row">
       <div class="categories">
-        <a href="#">điện gia dụng</a>
-        <a href="#">xe cộ</a>
-        <a href="#">mẹ & bé</a>
-        <a href="#">khỏe đẹp</a>
-        <a href="#">nhà cửa</a>
-        <a href="#">sách</a>
-        <a href="#">thể thao</a>
+        <a href="#">Trang chủ</a>
+        <a href="#">Sản phẩm</a>
+        <a href="#">Liên hệ</a>
+        <a href="#">Tin tức</a>
       </div>
 
       <div class="delivery">
-        <span class="icon"></span>
+        <i class="icon bi bi-geo-alt"></i>
         <span>Giao đến:</span>
         <span class="address">TP. Tam Kỳ, P. Tân Thạnh, Quảng Nam</span>
       </div>
     </div>
 
     <!-- Commitment Bar -->
-    <div class="header-bottom">
+    <!-- <div class="header-bottom">
       <div class="commitments">
         <span class="label">Cam kết</span>
         <span>100% hàng thật</span>
@@ -62,7 +57,7 @@
         <span>Giao nhanh 2h</span>
         <span>Giá siêu rẻ</span>
       </div>
-    </div>
+    </div> -->
   </header>
 </template>
 
@@ -99,7 +94,8 @@
 
 .logo img {
   height: 70px;
-  width: 100px; /* kích thước hợp lý với header */
+  width: 100px;
+  /* kích thước hợp lý với header */
   width: auto;
   display: block;
 }
@@ -109,12 +105,15 @@
   font-weight: 600;
   color: #007bff;
   margin-top: 2px;
-  white-space: nowrap; /* không xuống dòng */
+  white-space: nowrap;
+  /* không xuống dòng */
 }
+
 .logo-box {
   display: flex;
   gap: 4px;
 }
+
 .logo-box .block {
   width: 34px;
   height: 34px;
@@ -126,12 +125,15 @@
   font-weight: bold;
   font-size: 18px;
 }
+
 .blue {
   background-color: #007bff;
 }
+
 .yellow {
   background-color: #ffcc00;
 }
+
 .slogan {
   font-size: 13px;
   font-weight: 600;
@@ -148,6 +150,7 @@
   overflow: hidden;
   max-width: 600px;
 }
+
 .search input {
   flex: 1;
   padding: 8px 12px;
@@ -155,6 +158,7 @@
   outline: none;
   font-size: 14px;
 }
+
 .search button {
   background-color: #007bff;
   color: white;
@@ -164,6 +168,7 @@
   font-size: 14px;
   font-weight: 500;
 }
+
 .search button:hover {
   background-color: #005fd4;
 }
@@ -174,6 +179,7 @@
   align-items: center;
   gap: 20px;
 }
+
 .right-nav a {
   color: #333;
   text-decoration: none;
@@ -182,12 +188,15 @@
   align-items: center;
   gap: 4px;
 }
+
 .right-nav a:hover {
   color: #007bff;
 }
+
 .cart {
   position: relative;
 }
+
 .cart-count {
   position: absolute;
   top: -5px;
@@ -210,22 +219,29 @@
   margin: 0 auto;
   padding: 6px 30px;
   display: flex;
+  justify-content: flex-start;
   align-items: center;
-  justify-content: space-between;
 }
+
 .categories {
   display: flex;
   gap: 20px;
   font-size: 13px;
   color: #555;
+  margin: 0 auto;
+  flex: 1;
 }
+
 .categories a {
   text-decoration: none;
   color: inherit;
+  white-space: nowrap;
 }
+
 .categories a:hover {
   color: #007bff;
 }
+
 .delivery {
   display: flex;
   align-items: center;
@@ -233,6 +249,7 @@
   font-size: 13px;
   color: #555;
 }
+
 .delivery .address {
   font-weight: 600;
   color: #222;
@@ -244,6 +261,7 @@
   background: #f8f8f8;
   padding: 10px 30px;
 }
+
 .commitments {
   max-width: 1400px;
   margin: 0 auto;
@@ -254,6 +272,7 @@
   font-size: 13px;
   color: #444;
 }
+
 .commitments .label {
   color: #007bff;
   font-weight: 600;

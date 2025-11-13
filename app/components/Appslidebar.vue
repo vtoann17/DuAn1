@@ -11,7 +11,7 @@
         :to="category.link"
         class="sidebar-item"
       >
-        <span class="icon">{{ category.icon }}</span>
+        <i :class="['icon bi', category.icon]"></i>
         <span class="name">{{ category.name }}</span>
       </NuxtLink>
     </nav>
@@ -20,20 +20,21 @@
 
 <script setup>
 const categories = [
-  { id: 1, name: 'Nhà Sách Tiki', icon: '📘', link: '/nha-sach-tiki' },
-  { id: 2, name: 'Nhà Cửa - Đời Sống', icon: '🍲', link: '/nha-cua-doi-song' },
-  { id: 3, name: 'Điện Thoại - Máy Tính Bảng', icon: '📱', link: '/dien-thoai-may-tinh-bang' },
-  { id: 4, name: 'Đồ Chơi - Mẹ & Bé', icon: '🧸', link: '/do-choi-me-be' },
-  { id: 5, name: 'Thiết Bị Số - Phụ Kiện Số', icon: '🎧', link: '/thiet-bi-so-phu-kien-so' },
-  { id: 6, name: 'Điện Gia Dụng', icon: '🔌', link: '/dien-gia-dung' },
-  { id: 7, name: 'Làm Đẹp - Sức Khỏe', icon: '💄', link: '/lam-dep-suc-khoe' },
-  { id: 8, name: 'Ô Tô - Xe Máy - Xe Đạp', icon: '🛵', link: '/o-to-xe-may-xe-dap' },
-  { id: 9, name: 'Thời trang nữ', icon: '👗', link: '/thoi-trang-nu' },
-  { id: 10, name: 'Bách Hóa Online', icon: '🧴', link: '/bach-hoa-online' },
-  { id: 11, name: 'Thể Thao - Dã Ngoại', icon: '⚽', link: '/the-thao-da-ngoai' },
-  { id: 12, name: 'Thời trang nam', icon: '👕', link: '/thoi-trang-nam' },
-  { id: 13, name: 'Cross Border - Hàng Quốc Tế', icon: '🌐', link: '/cross-border-hang-quoc-te' },
-  { id: 14, name: 'Laptop - Máy Vi Tính', icon: '💻', link: '/laptop-may-vi-tinh' }
+  // Cập nhật trường 'icon' với tên class của Bootstrap Icons
+  { id: 1, name: 'Nhà Sách Tiki', icon: 'bi-book', link: '/nha-sach-tiki' },
+  { id: 2, name: 'Nhà Cửa - Đời Sống', icon: 'bi-house-door', link: '/nha-cua-doi-song' },
+  { id: 3, name: 'Điện Thoại - Máy Tính Bảng', icon: 'bi-phone', link: '/dien-thoai-may-tinh-bang' },
+  { id: 4, name: 'Đồ Chơi - Mẹ & Bé', icon: 'bi-balloon', link: '/do-choi-me-be' },
+  { id: 5, name: 'Thiết Bị Số - Phụ Kiện Số', icon: 'bi-headset', link: '/thiet-bi-so-phu-kien-so' },
+  { id: 6, name: 'Điện Gia Dụng', icon: 'bi-plug', link: '/dien-gia-dung' },
+  { id: 7, name: 'Làm Đẹp - Sức Khỏe', icon: 'bi-heart', link: '/lam-dep-suc-khoe' },
+  { id: 8, name: 'Ô Tô - Xe Máy - Xe Đạp', icon: 'bi-truck', link: '/o-to-xe-may-xe-dap' },
+  { id: 9, name: 'Thời trang nữ', icon: 'bi-bag', link: '/thoi-trang-nu' },
+  { id: 10, name: 'Bách Hóa Online', icon: 'bi-basket', link: '/bach-hoa-online' },
+  { id: 11, name: 'Thể Thao - Dã Ngoại', icon: 'bi-bicycle', link: '/the-thao-da-ngoai' },
+  { id: 12, name: 'Thời trang nam', icon: 'bi-person', link: '/thoi-trang-nam' },
+  { id: 13, name: 'Cross Border - Hàng Quốc Tế', icon: 'bi-globe', link: '/cross-border-hang-quoc-te' },
+  { id: 14, name: 'Laptop - Máy Vi Tính', icon: 'bi-laptop', link: '/laptop-may-vi-tinh' }
 ];
 </script>
 
@@ -85,11 +86,12 @@ const categories = [
   color: #007bff;
 }
 
-/* Icon */
+/* Icon - Điều chỉnh CSS để phù hợp với Bootstrap Icons */
 .sidebar-item .icon {
-  font-size: 18px;
-  width: 24px;
+  font-size: 18px; /* Kích thước icon */
+  width: 24px; /* Đảm bảo căn chỉnh đều */
   text-align: center;
+  /* Font-weight: bold; - Có thể thêm nếu muốn icon đậm hơn */
 }
 
 /* Active link */

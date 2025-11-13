@@ -3,7 +3,6 @@
     <h2>GIỎ HÀNG</h2>
 
     <div class="cart-container">
-      <!-- Cột trái -->
       <div class="cart-left">
         <div class="cart-header">
           <label><input type="checkbox" checked /> Tất cả (1 sản phẩm)</label>
@@ -45,15 +44,14 @@
         </div>
 
         <div class="cart-promo">
-          <span>➕ Thêm mã khuyến mãi của Shop</span>
+          <i class="bi bi-plus-circle"></i> Thêm mã khuyến mãi của Shop
         </div>
 
         <div class="cart-freeship">
-          🚚 Freeship 10k đơn từ 45k, Freeship 25k đơn từ 100k
+          <i class="bi bi-truck"></i> Freeship 10k đơn từ 45k, Freeship 25k đơn từ 100k
         </div>
       </div>
 
-      <!-- Cột phải -->
       <div class="cart-right">
         <div class="promo-box">
           <div class="promo-header">
@@ -61,7 +59,7 @@
             <span>Có thể chọn 2</span>
           </div>
           <div class="promo-item">
-            <div class="icon">🚚</div>
+            <div class="icon"><i class="bi bi-truck-flatbed"></i></div>
             <div class="text">Giảm 50K</div>
             <button class="select-btn">Bỏ chọn</button>
           </div>
@@ -251,6 +249,22 @@ h2 {
 
 .promo-item .icon {
   font-size: 22px;
+}
+
+/* Thêm style để icon Bootstrap hiển thị đúng kích thước */
+.cart-promo .bi {
+  font-size: 16px;
+  color: #007bff; /* Màu xanh cho icon */
+  margin-right: 4px;
+}
+.cart-freeship .bi {
+  font-size: 16px;
+  color: #008000; /* Màu xanh lá cây cho icon */
+  margin-right: 4px;
+}
+.promo-item .icon .bi {
+  font-size: 22px;
+  color: #007bff;
 }
 
 .select-btn {
